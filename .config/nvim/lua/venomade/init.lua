@@ -1,0 +1,5 @@
+require("venomade.remap")
+require("venomade.lazy")
+require("venomade.config")
+require("venomade.clipboard")
+require("venomade.neovide")
