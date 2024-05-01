@@ -735,6 +735,8 @@ Set fonts for both Monospace and Proportional text.
                       :slant 'italic)
   (set-face-attribute 'font-lock-keyword-face nil
                       :slant 'italic)
+  (add-hook 'org-mode-hook
+            (lambda () (face-remap-add-relative 'default :family "Zed Mono Nerd Font")))
 #+end_src
 *** Ligatures
 Make ligature symbols out of common function symbols.

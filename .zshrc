@@ -46,3 +46,9 @@ plugin-load $repos
 
 # Plugin Configs
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+
+# Path
+export PATH="$HOME/.local/bin:$PATH"
+
+# Aliases
+alias ec=emacsclient -t
