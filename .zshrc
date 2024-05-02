@@ -52,3 +52,5 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Aliases
 alias ec=emacsclient -t
+
+[ -f "/home/venomade/.ghcup/env" ] && . "/home/venomade/.ghcup/env" # ghcup-env

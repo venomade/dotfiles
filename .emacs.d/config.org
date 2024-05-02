@@ -683,6 +683,21 @@ Specific language packages
         (append exec-path
                 (list (expand-file-name "~/go/bin"))))
 #+end_src
+**** Haskell
+#+begin_src emacs-lisp
+  (use-package haskell-mode)
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.ghcup/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.ghcup/bin"))))
+#+end_src
 * Terminal
 
 ** VTerm
