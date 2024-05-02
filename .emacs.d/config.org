@@ -667,7 +667,9 @@ Specific language packages
 #+end_src
 **** Go
 #+begin_src emacs-lisp
-  (use-package go-mode)
+  (use-package go-mode
+    :config
+    (add-hook 'go-mode (lambda () (setq tab-width 4))))
 
   (setenv "PATH"
           (concat
