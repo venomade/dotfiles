@@ -113,8 +113,7 @@ Vim style line numbers.
   (setq display-line-numbers-type 'relative)
   (global-visual-line-mode t)
   (add-hook 'prog-mode-hook (lambda () (visual-line-mode -1)))
-  (setq-default truncate-lines nil)
-  (add-hook 'prog-mode-hook (lambda () (setq truncate-lines t)))
+  (setq-default truncate-lines t)
 #+end_src
 *** Generally use spaces instead of tabs
 Generally, as in everywhere but Go.
@@ -697,6 +696,7 @@ Specific language packages
   (setq exec-path
         (append exec-path
                 (list (expand-file-name "~/.ghcup/bin"))))
+  (use-package lsp-haskell)
 #+end_src
 * Terminal
 
