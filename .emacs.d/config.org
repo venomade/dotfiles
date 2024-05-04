@@ -645,8 +645,9 @@ Insane syntax highlighting.
 #+end_src
 
 *** Languages
-Specific language packages
+Specific language packages.
 **** Rust
+Use rust-mode with treesitter and add cargo's binaries to path.
 #+begin_src emacs-lisp
   (use-package rust-mode
     :init
@@ -665,6 +666,7 @@ Specific language packages
                 (list (expand-file-name "~/.cargo/bin"))))
 #+end_src
 **** Go
+Use go-mode, set tab-width there to 4 and add go's binaries to path.
 #+begin_src emacs-lisp
   (use-package go-mode
     :config
@@ -683,6 +685,7 @@ Specific language packages
                 (list (expand-file-name "~/go/bin"))))
 #+end_src
 **** Haskell
+Use haskell-mode and add ghcup's binaries to path.
 #+begin_src emacs-lisp
   (use-package haskell-mode)
   (setenv "PATH"
@@ -698,6 +701,7 @@ Specific language packages
                 (list (expand-file-name "~/.ghcup/bin"))))
   (use-package lsp-haskell)
 #+end_src
+
 * Terminal
 
 ** VTerm
