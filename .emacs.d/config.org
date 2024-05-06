@@ -65,7 +65,6 @@ I'm using the Straight package manager instead of use-package because it is only
 #+end_src
 
 * Configs
-
 ** Custom Functions
 *** Cursor follow on split 
 This is so that action can be taken as soon as a split takes place, to either close/move the window or perform an action inside of it.
@@ -124,7 +123,6 @@ Generally, as in everywhere but Go.
 #+end_src
 
 * General
-
 ** Beacon
 Highlight the cursor's position to make it's position clear on cursor jump.
 #+begin_src emacs-lisp
@@ -207,11 +205,13 @@ Keybindings for my most common actions.
     (general-evil-setup)
 
     ;; Set 'SPC' as the leader key
+    ;; and 'C-SPC' as the global leader
+    (global-unset-key (kbd "C-SPC"))
     (general-create-definer vnmd/leader-keys
                             :states '(normal insert visual emacs)
                             :keymaps 'override
                             :prefix "SPC"
-                            :global-prefix "M-SPC") ;; For insert mode ;; FIXME Alt-Space is a common keybind for the application menu.
+                            :global-prefix "C-SPC") ;; For insert mode
 
     (vnmd/leader-keys
       "/" '(swiper t :wk "Search")
@@ -442,7 +442,6 @@ After pressing a key and a half-second delay, list out the possible next keys to
 #+end_src
 
 * Dashboard
-
 ** Dashboard Config
 A dashboard for quick actions after entering Emacs.
 #+begin_src emacs-lisp
@@ -487,7 +486,6 @@ Hide startup messages, like 'hide warnings' but for information tooltips.
 #+end_src
 
 * Org Mode
-
 ** Table of Contents
 Automatically generate a table of contents for an Org file.
 #+begin_src emacs-lisp
@@ -633,7 +631,6 @@ Syntax checking for Emacs.
     :defer t
     :init (global-flycheck-mode))
 #+end_src
-
 *** Tree Sitter
 Insane syntax highlighting.
 #+begin_src emacs-lisp
@@ -643,7 +640,6 @@ Insane syntax highlighting.
   (global-tree-sitter-mode)
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
 #+end_src
-
 *** Languages
 Specific language packages.
 **** Rust
@@ -703,7 +699,6 @@ Use haskell-mode and add ghcup's binaries to path.
 #+end_src
 
 * Terminal
-
 ** VTerm
 Add a more traditional terminal to Emacs.
 *** VTerm Package
@@ -731,9 +726,20 @@ Toggle VTerm with 'SPC-t-t'
                    (reusable-frames . visible)
                    (window-height . 0.3))))
 #+end_src
+*** VTerm Evil Mode Fix
+Fix Evil Mode paste incompatibility with VTerm
+#+begin_src emacs-lisp
+  (defun vterm-evil-p-remap ()
+    "Remap 'p' key in Evil's normal state to execute 'vterm-yank' in vterm buffers."
+    (interactive)
+    (when (and (bound-and-true-p evil-mode)
+               (eq major-mode 'vterm-mode))
+      (define-key evil-normal-state-map "p" 'vterm-yank)))
+
+  (add-hook 'vterm-mode-hook 'vterm-evil-p-remap)
+#+end_src
 
 * User Interface
-
 ** Add Nerd Icons 
 Use Icons from Nerd Font to add a little modern spice to Emacs.
 #+begin_src emacs-lisp
@@ -765,17 +771,17 @@ Use Icons from Nerd Font to add a little modern spice to Emacs.
 Set fonts for both Monospace and Proportional text.
 #+begin_src emacs-lisp
   (set-face-attribute 'variable-pitch nil
-                      :font "ZedMono Nerd Font"
-                      :height 160
+                      :font "CaskaydiaCove Nerd Font"
+                      :height 140
                       :weight 'regular)
   (add-to-list 'default-frame-alist
-               '(font . "ZedMono Nerd Font-16"))
+               '(font . "CaskaydiaCove Nerd Font-14"))
   (set-face-attribute 'font-lock-comment-face nil
                       :slant 'italic)
   (set-face-attribute 'font-lock-keyword-face nil
                       :slant 'italic)
   (add-hook 'org-mode-hook
-            (lambda () (face-remap-add-relative 'default :family "Zed Mono Nerd Font")))
+            (lambda () (face-remap-add-relative 'default :family "CaskaydiaCove Nerd Font")))
 #+end_src
 *** Ligatures
 Make ligature symbols out of common function symbols.
@@ -827,9 +833,9 @@ Bind both scroling and +/- to zooming.
 ** Theme
 Set the theme to a nice dark one
 #+begin_src emacs-lisp
-  (use-package gruber-darker-theme
+  (use-package dracula-theme
     :init
-    (load-theme 'gruber-darker t))
+    (load-theme 'dracula t))
 #+end_src
 
 ** Niceties
