@@ -13,10 +13,11 @@ eshell/history
 eshell/lastdir
 lsp-bridge/
 org-persist/
+projects
 recentf
+session*
 sessions
 straight/
 tramp
 transient/
 url/
-session*

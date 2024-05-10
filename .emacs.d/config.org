@@ -33,8 +33,7 @@
   - [[#mixed-pitch][Mixed Pitch]]
   - [[#styling][Styling]]
 - [[#programming][Programming]]
-  - [[#lsp-mode][LSP Mode]]
-  - [[#corfu][Corfu]]
+  - [[#lsp-bridge][LSP-Bridge]]
   - [[#utilities][Utilities]]
 - [[#terminal][Terminal]]
   - [[#vterm][VTerm]]
@@ -249,11 +248,15 @@ Keybindings for my most common actions.
 
     (vnmd/leader-keys
       "l" '(:ignore t :wk "LSP")
-      "l a" '(lsp-execute-code-action :wk "Execute code action")
-      "l d" '(lsp-describe-thing-at-point :wk "Describe at point")
-      "l f" '(lsp-format-buffer :wk "Format buffer")
-      "l m" '(lsp-command-map :wk "LSP Command Map")
-      "l w" '(flycheck-list-errors :wk "Show Diagnostics"))
+      "l a" '(lsp-bridge-code-action :wk "Code Action")
+      "l d" '(lsp-bridge-popup-documentation :wk "Documentation")
+      "l c" '(comment-line :wk "Comment line")
+      "l f" '(lsp-bridge-code-format :wk "Format Code")
+      "l g" '(lsp-bridge-find-type-def :wk "Goto Definition")
+      "l i" '(lsp-bridge-find-impl :wk "Implementation")
+      "l n" '(lsp-bridge-rename :wk "(Re)Name")
+      "l r" '(lsp-bridge-find-references :wk "References")
+      "l w" '(lsp-bridge-diagnostic-list :wk "Show Diagnostics"))
 
     (vnmd/leader-keys
       "m" '(:ignore t :wk "Make")
@@ -452,11 +455,12 @@ A dashboard for quick actions after entering Emacs.
     (setq welcome-dashboard-latitude 52.0848
           welcome-dashboard-longitude 0.4368 ;; latitude and longitude must be set to show weather information
           welcome-dashboard-path-max-length 75
-          welcome-dashboard-use-fahrenheit nil ;; show in celcius or fahrenheit.
+          welcome-dashboard-use-fahrenheit nil
           welcome-dashboard-min-left-padding 10
           welcome-dashboard-image-file "~/.emacs.d/EmacsLogo.png"
           welcome-dashboard-image-width 261
           welcome-dashboard-image-height 220
+          welcome-dashboard-max-number-of-todos 5
           welcome-dashboard-title "Welcome Venomade. Time to Emacs!")
     (welcome-dashboard-create-welcome-hook)) 
 
@@ -573,53 +577,35 @@ Hide markers for bold, italic and other types of text styling.
 #+end_src
 
 * Programming
-** LSP Mode
-Use language servers to provide info and completion
+** LSP-Bridge
+Asynchronous external LSP
 #+begin_src emacs-lisp
-  (use-package lsp-mode
+  (use-package yasnippet
     :init
-    (setq lsp-completion-provider :none)
-    :commands lsp lsp-deferred
-    :config
-    (lsp-enable-snippet nil)
-    (lsp-enable-which-key-integration t)
-    :hook (prog-mode . lsp-deferred))
+    (yas-global-mode 1))
 
-  (use-package lsp-ui
-    :commands lsp-ui-mode
-    :hook (prog-mode . lsp-ui-mode))
+  (use-package markdown-mode
+    :ensure t
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init (setq markdown-command "multimarkdown")
+    :bind (:map markdown-mode-map
+           ("C-c C-e" . markdown-do)))
 
-  (define-key evil-normal-state-map (kbd "K") 'lsp-ui-doc-show)
-#+end_src
-
-** Corfu
-A lightweight auto-completion utility
-#+begin_src emacs-lisp
-  (use-package corfu
-    :diminish corfu-mode
-    :custom
-    (corfu-auto t)
-    (corfu-auto-delay 0.1)
-    (corfu-auto-prefix 2)
-    (corfu-quit-no-match t)
-    (corfu-cycle t)
-    (corfu-preselect 'prompt)
-    :bind
-    (:map corfu-map
-          ("RET" . nil)
-          ("TAB" . corfu-next)
-          ([tab] . corfu-next)
-          ("S-TAB" . corfu-previous)
-          ([backtab] . corfu-previous))
+  (use-package lsp-bridge
+    :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+              :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+              :build (:not compile))
     :init
-    (global-corfu-mode)
-    (corfu-popupinfo-mode))
+    (global-lsp-bridge-mode)
+    (setq
+     lsp-bridge-enable-hover-diagnostic t
+     lsp-bridge-enable-inlay-hint t
+     lsp-bridge-enable-search-words nil
+     lsp-bridge-enable-debug t
+     lsp-bridge-diagnostic-fetch-idle 0.2
+     acm-doc-frame-max-lines 50))
 
-  (use-package emacs
-    :init
-    (setq completion-cycle-threshold 3)
-    (setq corfu-popupinfo-delay 0)
-    (setq tab-always-indent 'complete))
+  (define-key evil-normal-state-map (kbd "K") 'lsp-bridge-popup-documentation)
 #+end_src
 
 ** Utilities
@@ -630,6 +616,10 @@ Syntax checking for Emacs.
     :diminish flycheck-mode
     :defer t
     :init (global-flycheck-mode))
+
+  (use-package flycheck-inline
+    :hook
+    (flycheck-mode . flycheck-inline-mode))
 #+end_src
 *** Tree Sitter
 Insane syntax highlighting.
@@ -660,6 +650,9 @@ Use rust-mode with treesitter and add cargo's binaries to path.
   (setq exec-path
         (append exec-path
                 (list (expand-file-name "~/.cargo/bin"))))
+  (use-package flycheck-rust
+    :config
+    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 #+end_src
 **** Go
 Use go-mode, set tab-width there to 4 and add go's binaries to path.
@@ -695,7 +688,6 @@ Use haskell-mode and add ghcup's binaries to path.
   (setq exec-path
         (append exec-path
                 (list (expand-file-name "~/.ghcup/bin"))))
-  (use-package lsp-haskell)
 #+end_src
 
 * Terminal
@@ -772,10 +764,10 @@ Set fonts for both Monospace and Proportional text.
 #+begin_src emacs-lisp
   (set-face-attribute 'variable-pitch nil
                       :font "CaskaydiaCove Nerd Font"
-                      :height 140
+                      :height 120
                       :weight 'regular)
   (add-to-list 'default-frame-alist
-               '(font . "CaskaydiaCove Nerd Font-14"))
+               '(font . "CaskaydiaCove Nerd Font-12"))
   (set-face-attribute 'font-lock-comment-face nil
                       :slant 'italic)
   (set-face-attribute 'font-lock-keyword-face nil
