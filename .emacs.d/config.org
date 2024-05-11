@@ -275,6 +275,15 @@ Keybindings for my most common actions.
       "o e h" '(org-html-export-to-html :wk "Export to HTML"))
 
     (vnmd/leader-keys
+      "p" '(:ignore t :wk "Project")
+      "p b" '(project-buffers :wk "Project Buffers")
+      "p c" '(project-compile :wk "Compile Project")
+      "p e" '(project-dired :wk "Explore Project")
+      "p f" '(project-find-file :wk "Find File")
+      "p g" '(project-find-regexp :wk "Grep Project")
+      "p o" '(project-find-dir :wk "Open Project"))
+  
+    (vnmd/leader-keys
       "t" '(:ignore t :wk "Terminal")
       "t t" '(vterm-toggle :wk "Toggle Terminal"))
 
