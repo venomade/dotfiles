@@ -21,15 +21,15 @@ local buttons = {
             type = 'padding',
             val = 1,
         },
-        dashboard.button('<leader>n', '  New File',
-                         ':enew | NvimTreeFocus<CR>',
+        dashboard.button('<leader>n', '󰝒  New File',
+                         ':enew <CR>',
                          { desc = 'New file' }),
-        dashboard.button('<leader>o', '  Old Files',
+        dashboard.button('<leader>o', '󰈢  Recent Files',
                          ':Telescope oldfiles<CR>',
-                         { desc = 'Old files' }),
-        dashboard.button('<leader>ff', '  Find File',
+                         { desc = 'Recent files' }),
+        dashboard.button('<leader>ff', '󰈞  Find File',
                          ':Telescope find_files<CR>'),
-        dashboard.button('<leader>fg', '  Find in files')
+        dashboard.button('<leader>fg', '󰮗  Find in files')
     }
 }
 

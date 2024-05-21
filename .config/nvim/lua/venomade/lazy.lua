@@ -1,25 +1,25 @@
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable",
+    'git',
+    'clone',
+    '--filter=blob:none',
+    'https://github.com/folke/lazy.nvim.git',
+    '--branch=stable',
     lazypath,
   })
 end
 vim.opt.rtp:prepend(lazypath)
 
-require("lazy").setup({
+require('lazy').setup({
 	-- Telescope Fuzzy Finder
 	{'nvim-telescope/telescope.nvim', tag = '0.1.3', dependencies = {'nvim-lua/plenary.nvim'}},
 	-- Catppuccin color scheme
-	{"catppuccin/nvim", name = "catppuccin", priority = 1000},
+	{'catppuccin/nvim', name = 'catppuccin', priority = 1000},
 	-- Treesitter syntax highlighting
-	{"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"},
+	{'nvim-treesitter/nvim-treesitter', build = ':TSUpdate'},
 	-- Harpoon bookmarking
-	{"theprimeagen/harpoon"},
+	{'theprimeagen/harpoon'},
 	-- LSP ZERO
 	{'VonHeikemen/lsp-zero.nvim', branch = 'v3.x'},
 	{'neovim/nvim-lspconfig', dependencies = {'hrsh7th/cmp-nvim-lsp'}},
@@ -38,7 +38,7 @@ require("lazy").setup({
   {'norcalli/nvim-colorizer.lua'},
   -- Return to last edit position
   {'ethanholz/nvim-lastplace'},
-  -- Org Mode in Neovim
-  {'nvim-neorg/neorg', dependencies = {'vhyrro/luarocks.nvim'}},
+  -- Shortcut helper
+  {'folke/which-key.nvim', event = 'VeryLazy'},
 })
 
