@@ -1,5 +1,6 @@
 *#
 *~
+.dap-breakpoints
 .DS_Store
 .cache/
 .lsp*
@@ -20,4 +21,5 @@ sessions
 straight/
 tramp
 transient/
+tree-sitter/
 url/

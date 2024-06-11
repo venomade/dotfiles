@@ -33,12 +33,14 @@
   - [[#mixed-pitch][Mixed Pitch]]
   - [[#styling][Styling]]
 - [[#programming][Programming]]
-  - [[#lsp-bridge][LSP-Bridge]]
+  - [[#lsp-autocomplete][LSP Autocomplete]]
+  - [[#company-mode][Company Mode]]
   - [[#utilities][Utilities]]
 - [[#terminal][Terminal]]
   - [[#vterm][VTerm]]
 - [[#user-interface][User Interface]]
   - [[#add-nerd-icons][Add Nerd Icons]]
+  - [[#add-all-the-icons][Add All The Icons]]
   - [[#kind-icons][Kind Icons]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
@@ -79,6 +81,14 @@ This is so that action can be taken as soon as a split takes place, to either cl
     (split-window-right)
     (balance-windows)
     (other-window 1))
+#+end_src
+*** Kill Current Buffer
+kill-this-buffer doesn't work in emacs 30 (relies on menubar visibility?) so this is a small implementation of window.el's /C-x 4 0/.
+#+begin_src emacs-lisp
+  (defun kill-current-buffer()
+    (interactive)
+    (let ((buffer-to-kill (current-buffer))))
+    (kill-buffer (current-buffer)))
 #+end_src
 
 ** Fix Annoyances
@@ -220,7 +230,7 @@ Keybindings for my most common actions.
     (vnmd/leader-keys
       "b" '(:ignore t :wk "Buffer")
       "b b" '(switch-to-buffer :wk "Switch buffer")
-      "b k" '(kill-this-buffer :wk "Kill this buffer")
+      "b k" '(kill-current-buffer :wk "Kill this buffer")
       "b n" '(next-buffer :wk "Next buffer")
       "b p" '(previous-buffer :wk "Previous buffer")
       "b r" '(revert-buffer :wk "Reload buffer"))
@@ -248,15 +258,15 @@ Keybindings for my most common actions.
 
     (vnmd/leader-keys
       "l" '(:ignore t :wk "LSP")
-      "l a" '(lsp-bridge-code-action :wk "Code Action")
-      "l d" '(lsp-bridge-popup-documentation :wk "Documentation")
+      "l a" '(lsp-execute-code-action :wk "Code Action")
+      "l d" '(lsp-describe-thing-at-point :wk "Documentation")
       "l c" '(comment-line :wk "Comment line")
-      "l f" '(lsp-bridge-code-format :wk "Format Code")
-      "l g" '(lsp-bridge-find-type-def :wk "Goto Definition")
-      "l i" '(lsp-bridge-find-impl :wk "Implementation")
-      "l n" '(lsp-bridge-rename :wk "(Re)Name")
-      "l r" '(lsp-bridge-find-references :wk "References")
-      "l w" '(lsp-bridge-diagnostic-list :wk "Show Diagnostics"))
+      "l f" '(lsp-format-buffer :wk "Format Code")
+      "l g" '(lsp-ui-peek-find-definitions :wk "Goto Definition")
+      "l i" '(lsp-ui-peek-find-implementation :wk "Implementation")
+      "l n" '(lsp-rename :wk "(Re)Name")
+      "l r" '(lsp-ui-peek-find-references :wk "References")
+      "l w" '(lsp-ui-flycheck-list :wk "Show Diagnostics"))
 
     (vnmd/leader-keys
       "m" '(:ignore t :wk "Make")
@@ -282,7 +292,7 @@ Keybindings for my most common actions.
       "p f" '(project-find-file :wk "Find File")
       "p g" '(project-find-regexp :wk "Grep Project")
       "p o" '(project-find-dir :wk "Open Project"))
-  
+
     (vnmd/leader-keys
       "t" '(:ignore t :wk "Terminal")
       "t t" '(vterm-toggle :wk "Toggle Terminal"))
@@ -586,35 +596,32 @@ Hide markers for bold, italic and other types of text styling.
 #+end_src
 
 * Programming
-** LSP-Bridge
-Asynchronous external LSP
+** LSP Autocomplete
+Use the LSP-Mode backend.
 #+begin_src emacs-lisp
-  (use-package yasnippet
-    :init
-    (yas-global-mode 1))
+  (use-package lsp-mode
+    :init (setq gc-cons-threshold 100000000
+                lsp-keymap-prefix "C-c l")
+    :hook ((prog-mode . lsp)
+           (lsp-mode . lsp-enable-which-key-intergration))
+    :commands lsp)
 
-  (use-package markdown-mode
-    :ensure t
-    :mode ("README\\.md\\'" . gfm-mode)
-    :init (setq markdown-command "multimarkdown")
-    :bind (:map markdown-mode-map
-           ("C-c C-e" . markdown-do)))
+  (use-package lsp-ui :commands lsp-ui-mode)
 
-  (use-package lsp-bridge
-    :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
-              :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-              :build (:not compile))
-    :init
-    (global-lsp-bridge-mode)
-    (setq
-     lsp-bridge-enable-hover-diagnostic t
-     lsp-bridge-enable-inlay-hint t
-     lsp-bridge-enable-search-words nil
-     lsp-bridge-enable-debug t
-     lsp-bridge-diagnostic-fetch-idle 0.2
-     acm-doc-frame-max-lines 50))
+  (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 
-  (define-key evil-normal-state-map (kbd "K") 'lsp-bridge-popup-documentation)
+  (use-package dap-mode)
+#+end_src
+
+** Company Mode
+Add Autocomplete UI.
+#+begin_src emacs-lisp
+  (use-package company
+    :hook
+    (prog-mode . company-mode)
+    :config
+    (setq company-minimum-prefix-length 1
+          company-idle-delay 0.0))
 #+end_src
 
 ** Utilities
@@ -755,6 +762,12 @@ Use Icons from Nerd Font to add a little modern spice to Emacs.
       :init (nerd-icons-ivy-rich-mode 1))
 
   (setq welcome-dashboard-use-nerd-icons t)
+#+end_src
+
+** Add All The Icons
+Add backup icon set that is used by lsp-mode.
+#+begin_src emacs-lisp
+  (use-package all-the-icons)
 #+end_src
 
 ** Kind Icons
