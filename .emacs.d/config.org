@@ -40,7 +40,6 @@
   - [[#vterm][VTerm]]
 - [[#user-interface][User Interface]]
   - [[#add-nerd-icons][Add Nerd Icons]]
-  - [[#add-all-the-icons][Add All The Icons]]
   - [[#kind-icons][Kind Icons]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
@@ -236,13 +235,14 @@ Keybindings for my most common actions.
       "b r" '(revert-buffer :wk "Reload buffer"))
 
     (vnmd/leader-keys
-      "e" '(:ignore t :wk "Evaluate / Eshell")
+      "e" '(:ignore t :wk "Emacs")
       "e b" '(eval-buffer :wk "Evaluate Elisp buffer")
       "e d" '(eval-defun :wk "Evaluate Elisp defun")
       "e e" '(eval-expression :wk "Evaluate Elisp expression")
       "e l" '(eval-last-sexp :wk "Evaluate Elisp expression before point")
       "e r" '(eval-region :wk "Evaluate Elisp region")
-      "e s" '(eshell :wk "Eshell"))
+      "e s" '(eshell :wk "Eshell")
+      "e t" '(ef-themes-load-random :wk "Theme Switch"))
 
     (vnmd/leader-keys
       "f" '(:ignore t :wk "Open File")
@@ -286,7 +286,7 @@ Keybindings for my most common actions.
 
     (vnmd/leader-keys
       "p" '(:ignore t :wk "Project")
-      "p b" '(project-buffers :wk "Project Buffers")
+      "p b" '(project-list-buffers :wk "Project Buffers")
       "p c" '(project-compile :wk "Compile Project")
       "p e" '(project-dired :wk "Explore Project")
       "p f" '(project-find-file :wk "Find File")
@@ -601,9 +601,8 @@ Use the LSP-Mode backend.
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :init (setq gc-cons-threshold 100000000
-                lsp-keymap-prefix "C-c l")
-    :hook ((prog-mode . lsp)
-           (lsp-mode . lsp-enable-which-key-intergration))
+                lsp-headerline-breadcrumb-enable nil)
+    :hook ((prog-mode . lsp))
     :commands lsp)
 
   (use-package lsp-ui :commands lsp-ui-mode)
@@ -621,7 +620,12 @@ Add Autocomplete UI.
     (prog-mode . company-mode)
     :config
     (setq company-minimum-prefix-length 1
+          company-tooltip-minimum-width 70
+          company-tooltip-maximum-width 70
           company-idle-delay 0.0))
+
+  (use-package company-prescient
+    :hook (company-mode . company-prescient-mode))
 #+end_src
 
 ** Utilities
@@ -632,10 +636,6 @@ Syntax checking for Emacs.
     :diminish flycheck-mode
     :defer t
     :init (global-flycheck-mode))
-
-  (use-package flycheck-inline
-    :hook
-    (flycheck-mode . flycheck-inline-mode))
 #+end_src
 *** Tree Sitter
 Insane syntax highlighting.
@@ -713,7 +713,7 @@ Add a more traditional terminal to Emacs.
 #+begin_src emacs-lisp
   (use-package vterm
     :config
-    (setq shell-file-name "/bin/bash"
+    (setq shell-file-name "/bin/zsh"
           vterm-max-scrollback 5000))
 #+end_src
 *** VTerm Toggle
@@ -764,12 +764,6 @@ Use Icons from Nerd Font to add a little modern spice to Emacs.
   (setq welcome-dashboard-use-nerd-icons t)
 #+end_src
 
-** Add All The Icons
-Add backup icon set that is used by lsp-mode.
-#+begin_src emacs-lisp
-  (use-package all-the-icons)
-#+end_src
-
 ** Kind Icons
 #+begin_src emacs-lisp
   (use-package kind-icon
@@ -784,18 +778,24 @@ Add backup icon set that is used by lsp-mode.
 *** Set Font
 Set fonts for both Monospace and Proportional text.
 #+begin_src emacs-lisp
+  (defvar customfontvar "Ubuntu Mono")
+
   (set-face-attribute 'variable-pitch nil
-                      :font "CaskaydiaCove Nerd Font"
+                      :font customfontvar
                       :height 120
                       :weight 'regular)
+
   (add-to-list 'default-frame-alist
-               '(font . "CaskaydiaCove Nerd Font-12"))
+               `(font . ,(concat customfontvar "-12")))
+
   (set-face-attribute 'font-lock-comment-face nil
                       :slant 'italic)
+
   (set-face-attribute 'font-lock-keyword-face nil
                       :slant 'italic)
+
   (add-hook 'org-mode-hook
-            (lambda () (face-remap-add-relative 'default :family "CaskaydiaCove Nerd Font")))
+            (lambda () (face-remap-add-relative 'default :family customfontvar)))
 #+end_src
 *** Ligatures
 Make ligature symbols out of common function symbols.
@@ -847,25 +847,12 @@ Bind both scroling and +/- to zooming.
 ** Theme
 Set the theme to a nice dark one
 #+begin_src emacs-lisp
-  (use-package dracula-theme
+  (use-package ef-themes
     :init
-    (load-theme 'dracula t))
+    (load-theme 'ef-kassio t))
 #+end_src
 
 ** Niceties
-*** Indent Guides
-Display indent guidelines when programming.
-#+begin_src emacs-lisp
-  (use-package highlight-indent-guides
-    :hook
-    (prog-mode . highlight-indent-guides-mode)
-    :config
-    (setq
-     highlight-indent-guides-method 'character
-     highlight-indent-guides-character ?\|
-     highlight-indent-guides-responsive 'top
-     highlight-indent-guides-auto-character-face-perc 90))
-#+end_src
 *** MacOS Titlebar
 Blend MacOS titlebar into Emacs for a seamless effect.
 #+begin_src emacs-lisp

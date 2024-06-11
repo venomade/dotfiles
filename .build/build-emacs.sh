@@ -1,11 +1,21 @@
 #!/bin/bash
 
+RECLONE_EMACS=true
 BUILD_WAYLAND=false
 
 cd ~/.build/
-rm -rf emacs
-git clone git://git.sv.gnu.org/emacs.git --depth 1
+
+if [ "$RECLONE_EMACS" = true ]; then
+  rm -rf emacs
+  git clone git://git.sv.gnu.org/emacs.git --depth 1
+fi
+
 cd emacs
+
+if [ "$RECLONE_EMACS" = false ]; then
+    rm -rf build
+fi
+
 mkdir build
 export CC=/usr/bin/gcc && export CXX=/usr/bin/gcc
 ./autogen.sh
