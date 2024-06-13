@@ -35,6 +35,7 @@
 - [[#programming][Programming]]
   - [[#lsp-autocomplete][LSP Autocomplete]]
   - [[#company-mode][Company Mode]]
+  - [[#codeium-completions][Codeium Completions]]
   - [[#utilities][Utilities]]
 - [[#terminal][Terminal]]
   - [[#vterm][VTerm]]
@@ -223,6 +224,8 @@ Keybindings for my most common actions.
 
     (vnmd/leader-keys
       "/" '(swiper t :wk "Search")
+      "c c" '(codeium-toggle :wk "Toggle Codeium")
+      "g" '(magit-status :wk "Magit")
       "r" '(:ignore t :wk "Reload")
       "r c" '((lambda () (interactive) (load-file "~/.emacs.d/init.el")) :wk "Reload Config"))
 
@@ -253,10 +256,6 @@ Keybindings for my most common actions.
       "f r" '(counsel-recentf :wk "Recent file"))
 
     (vnmd/leader-keys
-      "g" '(:ignore t :wk "Git")
-      "g s" '(magit-status :wk "Git Status"))
-
-    (vnmd/leader-keys
       "l" '(:ignore t :wk "LSP")
       "l a" '(lsp-execute-code-action :wk "Code Action")
       "l d" '(lsp-describe-thing-at-point :wk "Documentation")
@@ -266,6 +265,7 @@ Keybindings for my most common actions.
       "l i" '(lsp-ui-peek-find-implementation :wk "Implementation")
       "l n" '(lsp-rename :wk "(Re)Name")
       "l r" '(lsp-ui-peek-find-references :wk "References")
+      "l s" '(company-manual-begin :k "Suggest Completions" )
       "l w" '(lsp-ui-flycheck-list :wk "Show Diagnostics"))
 
     (vnmd/leader-keys
@@ -291,7 +291,8 @@ Keybindings for my most common actions.
       "p e" '(project-dired :wk "Explore Project")
       "p f" '(project-find-file :wk "Find File")
       "p g" '(project-find-regexp :wk "Grep Project")
-      "p o" '(project-find-dir :wk "Open Project"))
+      "p o" '(project-find-dir :wk "Open Project")
+      "p t" '(treemacs :wk "Toggle Project Sidebar"))
 
     (vnmd/leader-keys
       "t" '(:ignore t :wk "Terminal")
@@ -325,12 +326,10 @@ Keybindings for my most common actions.
 
     (vnmd/leader-keys
       :keymaps 'org-mode-map
-      "c" '(:ignore t :wk "Org-Src")
-      "c '" '(org-edit-src-code :wk "Edit Source Block"))
+      "c '" '(org-edit-src-code :wk "Edit Org Source Block"))
     (vnmd/leader-keys
       :keymaps 'org-src-mode-map
-      "c" '(:ignore t :wk "Org-Src")
-      "c '" '(org-edit-src-exit :wk "Exit Source Block"))
+      "c '" '(org-edit-src-exit :wk "Exit Org Source Block"))
     )
 #+end_src
 
@@ -605,7 +604,10 @@ Use the LSP-Mode backend.
     :hook ((prog-mode . lsp))
     :commands lsp)
 
-  (use-package lsp-ui :commands lsp-ui-mode)
+  (use-package lsp-ui
+    :config
+    (define-key evil-normal-state-map (kbd "K") 'lsp-ui-doc-toggle)
+    :commands lsp-ui-mode)
 
   (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 
@@ -626,6 +628,55 @@ Add Autocomplete UI.
 
   (use-package company-prescient
     :hook (company-mode . company-prescient-mode))
+
+  (with-eval-after-load 'company
+    (define-key company-active-map (kbd "<return>") nil)
+    (define-key company-active-map (kbd "RET") nil)
+    (define-key company-active-map (kbd "<C-return>") #'company-complete-selection))
+#+end_src
+
+** Codeium Completions
+Toggleable AI-Powered Code Completion.
+#+begin_src emacs-lisp
+  (use-package codeium
+    :straight '(:type git :host github :repo "Exafunction/codeium.el")
+    :config
+    (setq use-dialog-box nil)
+    (setq codeium-api-enabled
+          (lambda (api)
+            (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
+    (defun my-codeium/document/text ()
+      (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
+    (defun my-codeium/document/cursor_offset ()
+      (codeium-utf8-byte-length
+       (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
+    (setq codeium/document/text 'my-codeium/document/text)
+    (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
+
+  (defun add-codeium-completion ()
+    (interactive)
+    (setq completion-at-point-functions
+          (cons 'codeium-completion-at-point
+                completion-at-point-functions))
+    (setq-local company-frontends
+                '(company-pseudo-tooltip-frontend
+                  company-preview-frontend))
+    (setq company-minimum-prefix-length 0))
+
+  (defun remove-codeium-completion ()
+    (interactive)
+    (setq completion-at-point-functions
+          (delete 'codeium-completion-at-point
+                  completion-at-point-functions))
+    (setq company-frontends
+          (eval (car (get 'company-frontends 'standard-value))))
+    (setq company-minimum-prefix-length 2))
+
+  (defun codeium-toggle ()
+    (interactive)
+    (if (member 'codeium-completion-at-point completion-at-point-functions)
+        (remove-codeium-completion)
+      (add-codeium-completion)))
 #+end_src
 
 ** Utilities
@@ -705,6 +756,12 @@ Use haskell-mode and add ghcup's binaries to path.
         (append exec-path
                 (list (expand-file-name "~/.ghcup/bin"))))
 #+end_src
+**** C/C++
+Configure some settings for C & C++.
+#+begin_src emacs-lisp
+  (setq c-default-style "linux"
+        c-basic-offset 4)
+#+end_src
 
 * Terminal
 ** VTerm
@@ -778,24 +835,34 @@ Use Icons from Nerd Font to add a little modern spice to Emacs.
 *** Set Font
 Set fonts for both Monospace and Proportional text.
 #+begin_src emacs-lisp
-  (defvar customfontvar "Ubuntu Mono")
+  (defvar customfontsettings
+    '((mono . "Ubuntu Mono")
+      (variabl . "Ubuntu")
+      (size . 14)))
 
   (set-face-attribute 'variable-pitch nil
-                      :font customfontvar
-                      :height 120
+                      :font (cdr (assoc 'variabl customfontsettings))
+                      :height (* (cdr (assoc 'size customfontsettings)) 10)
+                      :weight 'regular)
+
+  (set-face-attribute 'fixed-pitch nil
+                      :font (cdr (assoc 'mono customfontsettings))
+                      :height (* (cdr (assoc 'size customfontsettings)) 10)
+                      :weight 'regular)
+
+  (set-face-attribute 'default nil
+                      :font (cdr (assoc 'mono customfontsettings))
+                      :height (* (cdr (assoc 'size customfontsettings)) 10)
                       :weight 'regular)
 
   (add-to-list 'default-frame-alist
-               `(font . ,(concat customfontvar "-12")))
+               `(font . ,(concat (cdr (assoc 'mono customfontsettings)) "-" (number-to-string (cdr (assoc 'size customfontsettings))))))
 
   (set-face-attribute 'font-lock-comment-face nil
                       :slant 'italic)
 
   (set-face-attribute 'font-lock-keyword-face nil
                       :slant 'italic)
-
-  (add-hook 'org-mode-hook
-            (lambda () (face-remap-add-relative 'default :family customfontvar)))
 #+end_src
 *** Ligatures
 Make ligature symbols out of common function symbols.
