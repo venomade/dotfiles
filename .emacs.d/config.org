@@ -245,7 +245,7 @@ Keybindings for my most common actions.
       "e l" '(eval-last-sexp :wk "Evaluate Elisp expression before point")
       "e r" '(eval-region :wk "Evaluate Elisp region")
       "e s" '(eshell :wk "Eshell")
-      "e t" '(ef-themes-load-random :wk "Theme Switch"))
+      "e t" '(ef-themes-toggle :wk "Theme Toggle"))
 
     (vnmd/leader-keys
       "f" '(:ignore t :wk "Open File")
@@ -916,7 +916,8 @@ Set the theme to a nice dark one
 #+begin_src emacs-lisp
   (use-package ef-themes
     :init
-    (load-theme 'ef-kassio t))
+    (setq ef-themes-to-toggle '(ef-dream ef-reverie))
+    (load-theme 'ef-dream t))
 #+end_src
 
 ** Niceties
