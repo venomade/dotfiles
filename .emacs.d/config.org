@@ -9,6 +9,7 @@
   - [[#fix-annoyances][Fix Annoyances]]
   - [[#setup-line-numbers][Setup Line Numbers]]
 - [[#general][General]]
+  - [[#avy][Avy]]
   - [[#beacon][Beacon]]
   - [[#colors][Colors]]
   - [[#diminish][Diminish]]
@@ -17,6 +18,7 @@
   - [[#magit][Magit]]
   - [[#ivy-counsel][Ivy (Counsel)]]
   - [[#pdf-tools][PDF Tools]]
+  - [[#scroll-on-jump][Scroll on Jump]]
   - [[#simple-modeline][Simple Modeline]]
   - [[#smart-parentheses-pairing][Smart Parentheses Pairing]]
   - [[#undo-tree][Undo Tree]]
@@ -67,7 +69,7 @@ I'm using the Straight package manager instead of use-package because it is only
 
 * Configs
 ** Custom Functions
-*** Cursor follow on split 
+*** Cursor follow on split
 This is so that action can be taken as soon as a split takes place, to either close/move the window or perform an action inside of it.
 #+begin_src emacs-lisp
   (defun split-and-follow-horizontally()
@@ -132,6 +134,15 @@ Generally, as in everywhere but Go.
 #+end_src
 
 * General
+** Avy
+#+begin_src emacs-lisp
+  (use-package avy
+    :after evil-collection
+    :config
+    (setq avy-keys '(?a ?r ?s ?t ?n ?e ?i ?o)
+          avy-all-windows nil)
+    (define-key evil-normal-state-map (kbd "-") 'avy-goto-char))
+#+end_src
 ** Beacon
 Highlight the cursor's position to make it's position clear on cursor jump.
 #+begin_src emacs-lisp
@@ -193,6 +204,7 @@ Adds Vim motions to Emacs, I was a vim user and have no interest in getting carp
     (setq evil-want-keybinding nil)
     (setq evil-vsplit-window-right t)
     (setq evil-split-window-below t)
+    (setq evil-want-C-u-scroll t)
     (evil-mode))
 #+end_src
 *** Evil Collection
@@ -228,6 +240,11 @@ Keybindings for my most common actions.
       "g" '(magit-status :wk "Magit")
       "r" '(:ignore t :wk "Reload")
       "r c" '((lambda () (interactive) (load-file "~/.emacs.d/init.el")) :wk "Reload Config"))
+
+    (vnmd/leader-keys
+      "SPC" '(:ignore t :wk "SPC")
+      "SPC w" '(avy-goto-word-0-below :wk "Goto word below")
+      "SPC b" '(avy-goto-word-0-above :wk "Goto word above"))
 
     (vnmd/leader-keys
       "b" '(:ignore t :wk "Buffer")
@@ -391,7 +408,6 @@ View PDFs within Emacs and have their colours match the theme.
     (pdf-tools-install)
     :hook (pdf-view-mode . pdf-view-themed-minor-mode))
 #+end_src
-
 *** Evil mode compatibility fix
 Fix an evil-mode pdf-view-mode compatibility bug that draws a flashing border around the PDF.
 #+begin_src emacs-lisp
@@ -401,13 +417,57 @@ Fix an evil-mode pdf-view-mode compatibility bug that draws a flashing border ar
       (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))
 #+end_src
 
+** Scroll on Jump
+Animate Emacs when jumping around.
+#+begin_src emacs-lisp
+  (use-package scroll-on-jump
+    :config
+    (setq scroll-on-jump-duration 0.6))
+
+  (with-eval-after-load 'evil
+    (scroll-on-jump-advice-add evil-undo)
+    (scroll-on-jump-advice-add evil-redo)
+    (scroll-on-jump-advice-add undo-tree-undo)
+    (scroll-on-jump-advice-add undo-tree-redo)
+    (scroll-on-jump-advice-add evil-jump-item)
+    (scroll-on-jump-advice-add evil-jump-forward)
+    (scroll-on-jump-advice-add evil-jump-backward)
+    (scroll-on-jump-advice-add evil-ex-search-next)
+    (scroll-on-jump-advice-add evil-ex-search-previous)
+    (scroll-on-jump-advice-add evil-search-next)
+    (scroll-on-jump-advice-add evil-search-previous)
+    (scroll-on-jump-advice-add evil-forward-paragraph)
+    (scroll-on-jump-advice-add evil-backward-paragraph)
+    (scroll-on-jump-advice-add evil-goto-mark)
+
+    ;; Actions that themselves scroll.
+    (scroll-on-jump-with-scroll-advice-add evil-goto-line)
+    (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
+    (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
+    (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
+    (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
+    (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom))
+
+  (with-eval-after-load 'goto-chg
+    (scroll-on-jump-advice-add goto-last-change)
+    (scroll-on-jump-advice-add goto-last-change-reverse))
+
+  (with-eval-after-load 'avy
+    (scroll-on-jump-advice-add avy-goto-char)
+    (scroll-on-jump-advice-add avy-goto-word-0-below)
+    (scroll-on-jump-advice-add avy-goto-word-0-above))
+
+  (global-set-key (kbd "<C-M-next>") (scroll-on-jump-interactive 'diff-hl-next-hunk))
+  (global-set-key (kbd "<C-M-prior>") (scroll-on-jump-interactive 'diff-hl-previous-hunk))
+#+end_src
+
 ** Simple Modeline
 Make the modeline simple, yet still display helpful information.
 #+begin_src emacs-lisp
   (use-package simple-modeline
     :diminish simple-modeline-mode
     :custom
-    (simple-modeline-segments 
+    (simple-modeline-segments
     '((simple-modeline-segment-modified
        simple-modeline-segment-buffer-name
        simple-modeline-segment-position)
@@ -480,7 +540,7 @@ A dashboard for quick actions after entering Emacs.
           welcome-dashboard-image-height 220
           welcome-dashboard-max-number-of-todos 5
           welcome-dashboard-title "Welcome Venomade. Time to Emacs!")
-    (welcome-dashboard-create-welcome-hook)) 
+    (welcome-dashboard-create-welcome-hook))
 
 #+end_src
 
@@ -519,18 +579,18 @@ Automatically generate a table of contents for an Org file.
   (add-hook 'org-mode-hook 'org-indent-mode)
 #+end_src
 
-** Bullet Headers 
+** Bullet Headers
 Stylize Org Mode headers with Nerd Icons.
 #+begin_src emacs-lisp
   (use-package org-bullets
     :diminish org-bullets-mode
     :config
     (setq org-bullets-bullet-list '(
-                                    ""
-                                    ""
-                                    ""
-                                    ""
-                                    "")))
+                                    "•"
+                                    "•"
+                                    "•"
+                                    "•"
+                                    "•")))
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src
 
@@ -612,6 +672,19 @@ Use the LSP-Mode backend.
   (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 
   (use-package dap-mode)
+
+  ;; Add ~/.local/bin to PATH for lsp
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.local/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.local/bin"))))
 #+end_src
 
 ** Company Mode
@@ -762,6 +835,37 @@ Configure some settings for C & C++.
   (setq c-default-style "linux"
         c-basic-offset 4)
 #+end_src
+**** PlatformIO
+Package for working on Embedded Controllers
+#+begin_src emacs-lisp
+  (use-package platformio-mode)
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.platformio/penv/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.platformio/penv/bin"))))
+  (add-hook 'c++-mode-hook (lambda ()
+                             (platformio-conditionally-enable)))
+#+end_src
+**** Zig
+Add the Zig Mode
+#+begin_src emacs-lisp
+  (use-package zig-mode
+    :config
+    (if (>= emacs-major-version 28)
+      (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+    (progn
+      (defun colorize-compilation-buffer ()
+        (let ((inhibit-read-only t))
+          (ansi-color-apply-on-region compilation-filter-start (point))))
+      (add-hook 'compilation-filter-hook 'colorize-compilation-buffer))))
+#+end_src
 
 * Terminal
 ** VTerm
@@ -794,6 +898,7 @@ Toggle VTerm with 'SPC-t-t'
 *** VTerm Evil Mode Fix
 Fix Evil Mode paste incompatibility with VTerm
 #+begin_src emacs-lisp
+  ;; TODO Investigate if this is causing the p -> mark bug
   (defun vterm-evil-p-remap ()
     "Remap 'p' key in Evil's normal state to execute 'vterm-yank' in vterm buffers."
     (interactive)
@@ -805,7 +910,7 @@ Fix Evil Mode paste incompatibility with VTerm
 #+end_src
 
 * User Interface
-** Add Nerd Icons 
+** Add Nerd Icons
 Use Icons from Nerd Font to add a little modern spice to Emacs.
 #+begin_src emacs-lisp
   (use-package nerd-icons
@@ -925,7 +1030,7 @@ Set the theme to a nice dark one
 Blend MacOS titlebar into Emacs for a seamless effect.
 #+begin_src emacs-lisp
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-  (add-to-list 'default-frame-alist '(ns-appearance . dark)) 
+  (add-to-list 'default-frame-alist '(ns-appearance . dark))
   (setq frame-title-format nil)
   (setq ns-use-proxy-icon nil)
 #+end_src
