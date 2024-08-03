@@ -702,10 +702,16 @@ Add Autocomplete UI.
   (use-package company-prescient
     :hook (company-mode . company-prescient-mode))
 
+  (use-package company-quickhelp
+    :init
+    (company-quickhelp-mode))
+
   (with-eval-after-load 'company
     (define-key company-active-map (kbd "<return>") nil)
     (define-key company-active-map (kbd "RET") nil)
-    (define-key company-active-map (kbd "<C-return>") #'company-complete-selection))
+    (define-key company-active-map (kbd "<C-return>") #'company-complete-selection)
+    (define-key company-active-map (kbd "<C-tab>") #'company-complete-common-or-cycle)
+    (define-key company-active-map (kbd "<tab>") #'company-complete-selection))
 #+end_src
 
 ** Codeium Completions
@@ -941,9 +947,9 @@ Use Icons from Nerd Font to add a little modern spice to Emacs.
 Set fonts for both Monospace and Proportional text.
 #+begin_src emacs-lisp
   (defvar customfontsettings
-    '((mono . "Ubuntu Mono")
-      (variabl . "Ubuntu")
-      (size . 14)))
+    '((mono . "UbuntuMono Nerd Font")
+      (variabl . "Ubuntu Nerd Font")
+      (size . 13)))
 
   (set-face-attribute 'variable-pitch nil
                       :font (cdr (assoc 'variabl customfontsettings))

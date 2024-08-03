@@ -1,9 +1,9 @@
 require("catppuccin").setup({
     flavour = "mocha",
-    transparent_background = false,
+    transparent_background = true,
     term_colors = true,
     dim_inactive = {
-        enabled = true,
+        enabled = false,
         shade = "dark",
         percentage = 0.15,
     },
@@ -26,4 +26,6 @@ require("catppuccin").setup({
     },
 })
 
+vim.o.pumblend = 0
+vim.o.winblend = 0
 vim.cmd.colorscheme "catppuccin"

@@ -28,6 +28,12 @@ Plug 'LunarWatcher/auto-pairs'
 " So take me back in time!!!
 Plug 'farmergreg/vim-lastplace'
 
+" So easy, slippery, like melted butter
+Plug 'easymotion/vim-easymotion'
+
+" Where am I scrolling
+Plug 'yuttie/comfortable-motion.vim'
+
 " One  please! Oooh and a   too!
 " Plug 'ryanoasis/vim-devicons'
 
@@ -114,5 +120,5 @@ map <leader>bp :bp<CR>
 " Remove Trailing Whitespaces on Save
 autocmd BufWritePre * %s/\s\+$//e
 
-" Needs to be here for whatever reason
+" Transparent Background (DO NOT USE! DESTROYS VIM PERFORMANCE)
 " hi Normal guibg=NONE ctermbg=NONE

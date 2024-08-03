@@ -40,5 +40,13 @@ require('lazy').setup({
   {'ethanholz/nvim-lastplace'},
   -- Shortcut helper
   {'folke/which-key.nvim', event = 'VeryLazy'},
+  -- Easy Motions for jumping to exact positions
+  {'easymotion/vim-easymotion'},
+  -- Smooth, Kinetic scrolling
+  {'yuttie/comfortable-motion.vim'},
+  -- OrgMode support
+  {'nvim-orgmode/orgmode', event = 'VeryLazy', ft = {'org'}},
+  -- Filemanager like Coconut Oil
+  {'stevearc/oil.nvim', dependencies = {'nvim-tree/nvim-web-devicons'}},
 })
 

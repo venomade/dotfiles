@@ -21,7 +21,7 @@ vim.opt.incsearch = true
 
 vim.opt.termguicolors = true
 
-vim.opt.scrolloff = 5
+vim.opt.scrolloff = 12
 
 vim.opt.updatetime = 50
 
@@ -39,3 +39,9 @@ vim.opt.incsearch = true
 vim.opt.title = true
 
 vim.cmd "set showtabline=0 | set laststatus=0"
+
+vim.api.nvim_create_autocmd("ExitPre", {
+	group = vim.api.nvim_create_augroup("Exit", { clear = true }),
+	command = "set guicursor=a:ver90",
+	desc = "Set cursor back to beam when leaving Neovim."
+}) 

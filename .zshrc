@@ -13,6 +13,9 @@ bindkey  "^[[H"   beginning-of-line
 bindkey  "^[[F"   end-of-line
 bindkey  "^[[3~"  delete-char
 
+# Recognise Ctrl + Tab
+echo -e '\e[>4;1m'
+
 # ZSH_Unplugged Plugin Manager
 function plugin-load {
   local repo plugdir initfile initfiles=()
@@ -51,6 +54,10 @@ zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 export PATH="$HOME/.local/bin:$PATH"
 
 # Aliases
-alias ec=emacsclient -t
+alias ec="emacsclient -t"
+alias ls="eza --icons -T -1"
+alias tm="tmux new -As0"
+alias vim="nvim"
+alias vi="nvim"
 
 [ -f "/home/venomade/.ghcup/env" ] && . "/home/venomade/.ghcup/env" # ghcup-env

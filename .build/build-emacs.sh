@@ -7,7 +7,7 @@ cd ~/.build/
 
 if [ "$RECLONE_EMACS" = true ]; then
   rm -rf emacs
-  git clone git://git.sv.gnu.org/emacs.git --depth 1
+  git clone https://github.com/emacs-mirror/emacs.git --depth 1
 fi
 
 cd emacs
