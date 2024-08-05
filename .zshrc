@@ -55,7 +55,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Aliases
 alias ec="emacsclient -t"
-alias ls="eza --icons -T -1"
+alias ls="eza --icons -1"
 alias tm="tmux new -As0"
 alias vim="nvim"
 alias vi="nvim"

@@ -48,5 +48,10 @@ require('lazy').setup({
   {'nvim-orgmode/orgmode', event = 'VeryLazy', ft = {'org'}},
   -- Filemanager like Coconut Oil
   {'stevearc/oil.nvim', dependencies = {'nvim-tree/nvim-web-devicons'}},
+  -- Highlight TODO, FIX, HACK, e.t.c.
+  {'folke/todo-comments.nvim', dependencies = {'nvim-lua/plenary.nvim'}},
+  -- Rainbow Brackets and other Delimeters
+  {'HiPhish/rainbow-delimiters.nvim'},
+  -- Magit for Neovim
+  { 'NeogitOrg/neogit', dependencies = { 'nvim-lua/plenary.nvim', 'sindrets/diffview.nvim', 'nvim-telescope/telescope.nvim'}, config = true},
 })
-

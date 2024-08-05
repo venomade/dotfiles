@@ -9,6 +9,7 @@ require'lspconfig'.clangd.setup{}
 require'lspconfig'.hls.setup{}
 require'lspconfig'.nil_ls.setup{}
 require'lspconfig'.rust_analyzer.setup{}
+require'lspconfig'.zls.setup{}
 
 local lspkind = require('lspkind')
 local cmp = require('cmp')
