@@ -19,7 +19,8 @@ echo -e '\e[>4;1m'
 # ZSH_Unplugged Plugin Manager
 function plugin-load {
   local repo plugdir initfile initfiles=()
-  : ${ZPLUGINDIR:=${ZDOTDIR:-~/.config/zsh}/plugins}
+  #: ${ZPLUGINDIR:=${ZDOTDIR:-~/.CONFIG/ZSH}/PLUGINS}
+  export ZPLUGINDIR="${HOME}/.config/zsh/plugins"
   for repo in $@; do
     plugdir=$ZPLUGINDIR/${repo:t}
     initfile=$plugdir/${repo:t}.plugin.zsh
@@ -59,5 +60,7 @@ alias ls="eza --icons -1"
 alias tm="tmux new -As0"
 alias vim="nvim"
 alias vi="nvim"
+alias sudo="sudo "
+alias zyp="zypper"
 
 [ -f "/home/venomade/.ghcup/env" ] && . "/home/venomade/.ghcup/env" # ghcup-env

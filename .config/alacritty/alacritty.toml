@@ -1,12 +1,19 @@
-# GENERAL
-shell.program = "/bin/zsh"
+# THEME
+import = [
+  "~/.config/alacritty/catppuccin-mocha.toml"
+]
+
+# Set Shell to TMUX 
+[shell]
+program = "/usr/bin/tmux"
+args = ["new", "-As0"]
 
 # WINDOW
 [window]
 blur = true
 dynamic_padding = true
 dynamic_title = true
-opacity = 0.8
+opacity = 1.0
 title = "Terminal"
 
 # FONT
@@ -17,36 +24,6 @@ size = 12.0
 # COLORS
 [colors]
 draw_bold_text_with_bright_colors = true
-
-# Colors (Ayu Dark)
-# https://github.com/alacritty/alacritty-theme/blob/master/themes/ayu_dark.toml
-
-# Default colors
-[colors.primary]
-background = '#0A0E14'
-foreground = '#B3B1AD'
-
-# Normal colors
-[colors.normal]
-black   = '#01060E'
-red     = '#EA6C73'
-green   = '#91B362'
-yellow  = '#F9AF4F'
-blue    = '#53BDFA'
-magenta = '#FAE994'
-cyan    = '#90E1C6'
-white   = '#C7C7C7'
-
-# Bright colors
-[colors.bright]
-black   = '#686868'
-red     = '#F07178'
-green   = '#C2D94C'
-yellow  = '#FFB454'
-blue    = '#59C2FF'
-magenta = '#FFEE99'
-cyan    = '#95E6CB'
-white   = '#FFFFFF'
 
 # CURSOR
 [cursor]
