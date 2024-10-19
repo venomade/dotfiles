@@ -6,7 +6,7 @@ import = [
 # Set Shell to TMUX 
 [shell]
 program = "/usr/bin/tmux"
-args = ["new", "-As0"]
+args = ["new"]
 
 # WINDOW
 [window]
@@ -18,7 +18,7 @@ title = "Terminal"
 
 # FONT
 [font]
-normal = { family = "CaskaydiaCove Nerd Font", style = "Regular" }
+normal = { family = "FantasqueSansM Nerd Font", style = "Regular" }
 size = 12.0
 
 # COLORS

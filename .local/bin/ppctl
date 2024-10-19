@@ -1,0 +1,66 @@
+#!/bin/bash
+
+function set_profile {
+    case $1 in
+        performance)
+            powerprofilesctl set performance
+            ;;
+        balanced)
+            powerprofilesctl set balanced
+            ;;
+        power-saver)
+            powerprofilesctl set power-saver
+            ;;
+        *)
+            echo "Invalid profile. Please use 'performance', 'balanced', or 'power-saver'."
+            ;;
+    esac
+}
+
+function get_profile {
+    powerprofilesctl get
+}
+
+function get_nficon {
+    profile=$1
+    case $profile in
+        performance)
+            echo "󰓅"
+            ;;
+        balanced)
+            echo "󰾅"
+            ;;
+        power-saver)
+            echo "󰾆"
+            ;;
+        *)
+            echo "Invalid profile"
+            ;;
+    esac
+}
+
+function send_notification {
+    profile=$(get_profile)
+    icon="power-profile-$profile-symbolic"
+    # Send the notification
+    dunstify -i $icon -t 2500 -r 2593 -u normal "Power Profile: $profile"
+}
+
+# Function to set the contents of "/tmp/powerprofile" to the current profile
+function set_tmp_powerprofile {
+    profile=$(get_profile)
+    nficon=$(get_nficon $profile)
+    echo "$nficon  $profile" > /tmp/powerprofile
+}
+
+case $1 in
+    performance|balanced|power-saver)
+        set_profile $1
+        send_notification
+        set_tmp_powerprofile
+        ;;
+    *)
+        echo "Usage: $0 {performance|balanced|power-saver}"
+        exit 1
+        ;;
+esac

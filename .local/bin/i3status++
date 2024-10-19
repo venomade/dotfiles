@@ -1,0 +1,8 @@
+#!/bin/bash
+
+i3status | (read line; echo "$line"; read line ; echo "$line" ; read line ; echo "$line" ; while true
+do
+    read line
+    json_array="$(echo $line | sed -e 's/^,//')"
+    echo ",$json_array" 
+done)

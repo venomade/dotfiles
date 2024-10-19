@@ -1,0 +1,78 @@
+#!/bin/bash
+
+function get_volume {
+    pactl get-sink-volume @DEFAULT_SINK@ | awk '/Volume:/ {print $5}' | cut -d '/' -f 1 | sed 's/%//g'
+}
+
+function is_mute {
+    #amixer get Master | grep '%' | grep -oE '[^ ]+$' | grep off > /dev/null
+    pactl list sinks | grep -A 10 'State: ' | grep -q 'Mute: yes'
+}
+
+function is_mic_mute {
+    pactl list sources | grep -A 10 'State: ' | grep -q 'Mute: yes'
+}
+
+function get_icon {
+    volume=$(get_volume)
+    if is_mute; then
+        echo "audio-volume-muted-symbolic"
+    elif (( volume <= 39 )); then
+        echo "audio-volume-low-symbolic"
+    elif (( volume <= 74 )); then
+        echo "audio-volume-medium-symbolic"
+    elif (( volume <= 100 )); then
+        echo "audio-volume-high-symbolic"
+    else
+        echo "audio-volume-overamplified-symbolic"
+    fi
+}
+
+function send_notification {
+    volume=$(get_volume)
+    icon=$(get_icon)
+    # Make the bar with the special character ─ (it's not dash -)
+    # https://en.wikipedia.org/wiki/Box-drawing_character
+    bar=$(seq -s "─" $(($volume / 5)) | sed 's/[0-9]//g')
+    # Send the notification
+    dunstify -i "$icon" -t 2500 -r 2593 -u normal "    $bar"
+}
+
+case $1 in
+    up)
+	# Set the volume on (if it was muted)
+	#amixer -D pulse set Master on > /dev/null
+	# Up the volume (+ 5%)
+	# amixer -D pu lse sset Master 5%+ > /dev/null
+        volume=$(get_volume)
+        if [[ $volume -le 99 ]]; then
+            pactl set-sink-volume @DEFAULT_SINK@ +5%
+        else
+            pactl set-sink-volume @DEFAULT_SINK@ 100%
+        fi
+        send_notification
+	;;
+    down)
+	# amixer -D pulse set Master on > /dev/null
+	# amixer -D pulse sset Master 5%- > /dev/null
+        pactl set-sink-volume @DEFAULT_SINK@ -5%
+	send_notification
+	;;
+    mute)
+    	# Toggle mute
+        pactl set-sink-mute @DEFAULT_SINK@ toggle
+	if is_mute ; then
+	    dunstify -i audio-volume-muted -t 2500 -r 2593 -u normal "Mute"
+	else
+	    send_notification
+	fi
+	;;
+    mute-mic)
+        pactl set-source-mute @DEFAULT_SOURCE@ toggle
+        if is_mic_mute ; then
+            dunstify -i microphone-sensitivity-muted-symbolic -t 2500 -r 2593 -u normal "Microphone Muted"
+        else
+            dunstify -i microphone-sensitivity-high-symbolic -t 2500 -r 2593 -u normal "Microphone Unmuted"
+        fi
+        ;;
+esac

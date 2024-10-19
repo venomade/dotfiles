@@ -10,7 +10,6 @@
   - [[#setup-line-numbers][Setup Line Numbers]]
 - [[#general][General]]
   - [[#avy][Avy]]
-  - [[#beacon][Beacon]]
   - [[#colors][Colors]]
   - [[#diminish][Diminish]]
   - [[#evil-mode][Evil Mode]]
@@ -18,7 +17,6 @@
   - [[#magit][Magit]]
   - [[#ivy-counsel][Ivy (Counsel)]]
   - [[#pdf-tools][PDF Tools]]
-  - [[#scroll-on-jump][Scroll on Jump]]
   - [[#simple-modeline][Simple Modeline]]
   - [[#smart-parentheses-pairing][Smart Parentheses Pairing]]
   - [[#undo-tree][Undo Tree]]
@@ -45,6 +43,7 @@
   - [[#add-nerd-icons][Add Nerd Icons]]
   - [[#kind-icons][Kind Icons]]
   - [[#fonts][Fonts]]
+  - [[#padding][Padding]]
   - [[#theme][Theme]]
   - [[#niceties][Niceties]]
 
@@ -143,14 +142,6 @@ Generally, as in everywhere but Go.
           avy-all-windows nil)
     (define-key evil-normal-state-map (kbd "-") 'avy-goto-char))
 #+end_src
-** Beacon
-Highlight the cursor's position to make it's position clear on cursor jump.
-#+begin_src emacs-lisp
-  (use-package beacon
-    :diminish beacon-mode
-    :init
-    (beacon-mode 1))
-#+end_src
 
 ** Colors
 *** Highlight Todo
@@ -179,7 +170,7 @@ Highlights color hex codes with their color
     :hook ((org-mode . rainbow-mode)
            (prog-mode . rainbow-mode)))
 #+end_src
-***  Rainbow Delimiters
+*** Rainbow Delimiters
 Makes different brackets and other delimeters levels different colors so they can be quickly distinguished.
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
@@ -262,7 +253,8 @@ Keybindings for my most common actions.
       "e l" '(eval-last-sexp :wk "Evaluate Elisp expression before point")
       "e r" '(eval-region :wk "Evaluate Elisp region")
       "e s" '(eshell :wk "Eshell")
-      "e t" '(ef-themes-toggle :wk "Theme Toggle"))
+      "e t" '(ef-themes-toggle :wk "Theme Toggle")
+      "e f" '(ef-themes-select :wk "Select an EF-Theme"))
 
     (vnmd/leader-keys
       "f" '(:ignore t :wk "Open File")
@@ -324,20 +316,20 @@ Keybindings for my most common actions.
       "w h" '(evil-window-left :wk "Window Left")
       "w <left>" '(evil-window-left :wk "Window Left")
 
-      "w j" '(evil-window-down :wk "Window Down")
+      "w n" '(evil-window-down :wk "Window Down")
       "w <down>" '(evil-window-down :wk "Window Down")
 
-      "w k" '(evil-window-up :wk "Window Up")
+      "w e" '(evil-window-up :wk "Window Up")
       "w <up>" '(evil-window-up :wk "Window Up")
 
-      "w l" '(evil-window-right :wk "Window Right")
+      "w i" '(evil-window-right :wk "Window Right")
       "w <right>" '(evil-window-right :wk "Window Right")
 
       "w u" '(winner-undo :wk "Undo Movement")
       "w r" '(winner-redo :wk "Redo Movement")
 
       "w c" '(evil-window-delete :wk "Close Window")
-      "w n" '(evil-window-new :wk "New Window")
+      "w o" '(evil-window-new :wk "Open Window")
       "w v" '(evil-window-vsplit :wk "Split Window (Vertical)")
       "w s" '(evil-window-split :wk "Split Window (Horizontal)"))
 
@@ -415,50 +407,6 @@ Fix an evil-mode pdf-view-mode compatibility bug that draws a flashing border ar
   (add-hook 'pdf-view-mode-hook
     (lambda ()
       (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))
-#+end_src
-
-** Scroll on Jump
-Animate Emacs when jumping around.
-#+begin_src emacs-lisp
-  (use-package scroll-on-jump
-    :config
-    (setq scroll-on-jump-duration 0.6))
-
-  (with-eval-after-load 'evil
-    (scroll-on-jump-advice-add evil-undo)
-    (scroll-on-jump-advice-add evil-redo)
-    (scroll-on-jump-advice-add undo-tree-undo)
-    (scroll-on-jump-advice-add undo-tree-redo)
-    (scroll-on-jump-advice-add evil-jump-item)
-    (scroll-on-jump-advice-add evil-jump-forward)
-    (scroll-on-jump-advice-add evil-jump-backward)
-    (scroll-on-jump-advice-add evil-ex-search-next)
-    (scroll-on-jump-advice-add evil-ex-search-previous)
-    (scroll-on-jump-advice-add evil-search-next)
-    (scroll-on-jump-advice-add evil-search-previous)
-    (scroll-on-jump-advice-add evil-forward-paragraph)
-    (scroll-on-jump-advice-add evil-backward-paragraph)
-    (scroll-on-jump-advice-add evil-goto-mark)
-
-    ;; Actions that themselves scroll.
-    (scroll-on-jump-with-scroll-advice-add evil-goto-line)
-    (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
-    (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
-    (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
-    (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
-    (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom))
-
-  (with-eval-after-load 'goto-chg
-    (scroll-on-jump-advice-add goto-last-change)
-    (scroll-on-jump-advice-add goto-last-change-reverse))
-
-  (with-eval-after-load 'avy
-    (scroll-on-jump-advice-add avy-goto-char)
-    (scroll-on-jump-advice-add avy-goto-word-0-below)
-    (scroll-on-jump-advice-add avy-goto-word-0-above))
-
-  (global-set-key (kbd "<C-M-next>") (scroll-on-jump-interactive 'diff-hl-next-hunk))
-  (global-set-key (kbd "<C-M-prior>") (scroll-on-jump-interactive 'diff-hl-previous-hunk))
 #+end_src
 
 ** Simple Modeline
@@ -834,6 +782,11 @@ Use haskell-mode and add ghcup's binaries to path.
   (setq exec-path
         (append exec-path
                 (list (expand-file-name "~/.ghcup/bin"))))
+
+  (use-package lsp-haskell
+    :after lsp-mode
+    :config
+    (setq lsp-haskell-server-path "haskell-language-server-wrapper"))
 #+end_src
 **** C/C++
 Configure some settings for C & C++.
@@ -924,7 +877,8 @@ Use Icons from Nerd Font to add a little modern spice to Emacs.
 
   (use-package nerd-icons-dired
     :hook
-    (dired-mode . nerd-icons-dired-mode))
+    (dired-mode . nerd-icons-dired-mode)
+    (dired-mode . dired-hide-details-mode))
 
   (use-package nerd-icons-ivy-rich
       :init (nerd-icons-ivy-rich-mode 1))
@@ -947,9 +901,9 @@ Use Icons from Nerd Font to add a little modern spice to Emacs.
 Set fonts for both Monospace and Proportional text.
 #+begin_src emacs-lisp
   (defvar customfontsettings
-    '((mono . "UbuntuMono Nerd Font")
-      (variabl . "Ubuntu Nerd Font")
-      (size . 13)))
+    '((mono . "FantasqueSansM Nerd Font")
+      (variabl . "FantasqueSansM Nerd Font")
+      (size . 12)))
 
   (set-face-attribute 'variable-pitch nil
                       :font (cdr (assoc 'variabl customfontsettings))
@@ -1022,13 +976,37 @@ Bind both scroling and +/- to zooming.
   (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 #+end_src
 
+** Padding
+Add Padding around Emacs UI.
+#+begin_src emacs-lisp
+  (use-package spacious-padding
+    :straight '(:type git :host github :repo "protesilaos/spacious-padding")
+    :config
+    (setq spacious-padding-widths
+          '( :internal-border-width 15
+             :header-line-width 4
+             :mode-line-width 6
+             :tab-width 4
+             :right-divider-width 30
+             :scroll-bar-width 8
+             :fringe-width 8))
+
+    (setq spacious-padding-subtle-mode-line
+          `( :mode-line-active 'default
+             :mode-line-inactive vertical-border))
+    :init
+    (spacious-padding-mode 1))
+#+end_src
+
 ** Theme
-Set the theme to a nice dark one
+Set up some lovely themes.
 #+begin_src emacs-lisp
   (use-package ef-themes
     :init
-    (setq ef-themes-to-toggle '(ef-dream ef-reverie))
-    (load-theme 'ef-dream t))
+    (setq ef-themes-to-toggle '(ef-cyprus ef-dream))
+    (add-hook 'window-setup-hook
+              (lambda ()
+                (load-theme 'ef-dream t))))
 #+end_src
 
 ** Niceties

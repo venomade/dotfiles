@@ -63,4 +63,5 @@ alias vi="nvim"
 alias sudo="sudo "
 alias zyp="zypper"
 
+. "$HOME/.cargo/env"
 [ -f "/home/venomade/.ghcup/env" ] && . "/home/venomade/.ghcup/env" # ghcup-env
