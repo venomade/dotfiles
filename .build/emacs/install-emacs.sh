@@ -77,7 +77,7 @@ export CC=/usr/bin/gcc-11 CXX=/usr/bin/gcc-11
 mkdir build
 cd build
 
-CONFIGURE_ARGS="--with-dbus --with-gif --with-jpeg --with-png --with-rsvg --with-tiff --with-xft --with-xpm --with-gpm=no --with-imagemagick --with-json --with-xwidgets --with-x-toolkit=gtk3 --with-cairo --with-modules --with-native-compilation --with-tree-sitter --without-pop"
+CONFIGURE_ARGS="--with-dbus --with-gif --with-jpeg --with-png --with-rsvg --with-tiff --with-xft --with-xpm --with-gpm=no --with-imagemagick --with-json --with-xwidgets --with-x-toolkit=gtk3 --with-cairo --with-modules --with-native-compilation --with-tree-sitter --without-pop --with-pgtk"
 
 ../configure $CONFIGURE_ARGS CFLAGS="-O2 -pipe -march=native"
 make -j $(($(nproc) - 1)) CFLAGS="-O2 -pipe -march=native"

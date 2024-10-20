@@ -91,6 +91,17 @@ kill-this-buffer doesn't work in emacs 30 (relies on menubar visibility?) so thi
     (let ((buffer-to-kill (current-buffer))))
     (kill-buffer (current-buffer)))
 #+end_src
+*** Pop Out Window
+Pops the current window out into it's own frame.
+#+begin_src emacs-lisp
+  (defun pop-out-window-into-frame ()
+    "Pop out the current window into its own frame."
+    (interactive)
+    (let ((buffer (current-buffer)))
+      (delete-window)
+      (select-frame (make-frame))
+      (set-window-buffer (selected-window) buffer)))
+#+end_src
 
 ** Fix Annoyances
 *** Disable Backups
@@ -197,6 +208,17 @@ Adds Vim motions to Emacs, I was a vim user and have no interest in getting carp
     (setq evil-split-window-below t)
     (setq evil-want-C-u-scroll t)
     (evil-mode))
+#+end_src
+*** Evil Don't Kill Emacs
+Rebind Evil mode's commands to not kill Emacs, just the buffer.
+#+begin_src emacs-lisp
+  (defun save-and-kill-buffer()
+    (interactive)
+    (save-buffer)
+    (kill-buffer))
+
+  (global-set-key [remap evil-quit] 'kill-current-buffer)
+  (evil-ex-define-cmd "wq" 'save-and-kill-buffer)
 #+end_src
 *** Evil Collection
 Adds Vim motions to even more Emacs packages.
@@ -331,7 +353,8 @@ Keybindings for my most common actions.
       "w c" '(evil-window-delete :wk "Close Window")
       "w o" '(evil-window-new :wk "Open Window")
       "w v" '(evil-window-vsplit :wk "Split Window (Vertical)")
-      "w s" '(evil-window-split :wk "Split Window (Horizontal)"))
+      "w s" '(evil-window-split :wk "Split Window (Horizontal)")
+      "w f" '(pop-out-window-into-frame :wk "Frame Window"))
 
     (vnmd/leader-keys
       :keymaps 'org-mode-map
@@ -609,7 +632,6 @@ Use the LSP-Mode backend.
   (use-package lsp-mode
     :init (setq gc-cons-threshold 100000000
                 lsp-headerline-breadcrumb-enable nil)
-    :hook ((prog-mode . lsp))
     :commands lsp)
 
   (use-package lsp-ui
@@ -730,6 +752,7 @@ Specific language packages.
 Use rust-mode with treesitter and add cargo's binaries to path.
 #+begin_src emacs-lisp
   (use-package rust-mode
+    :hook ((rust-mode . lsp))
     :init
     (setq rust-mode-treesitter-derive t))
 
@@ -752,6 +775,7 @@ Use rust-mode with treesitter and add cargo's binaries to path.
 Use go-mode, set tab-width there to 4 and add go's binaries to path.
 #+begin_src emacs-lisp
   (use-package go-mode
+    :hook ((go-mode . lsp))
     :config
     (add-hook 'go-mode (lambda () (setq tab-width 4))))
 
@@ -770,7 +794,8 @@ Use go-mode, set tab-width there to 4 and add go's binaries to path.
 **** Haskell
 Use haskell-mode and add ghcup's binaries to path.
 #+begin_src emacs-lisp
-  (use-package haskell-mode)
+  (use-package haskell-mode
+    :hook ((haskell-mode . lsp)))
   (setenv "PATH"
           (concat
            (concat
@@ -791,6 +816,8 @@ Use haskell-mode and add ghcup's binaries to path.
 **** C/C++
 Configure some settings for C & C++.
 #+begin_src emacs-lisp
+  (add-hook 'c++-mode-hook #'lsp)
+  (add-hook 'c-mode-hook #'lsp)
   (setq c-default-style "linux"
         c-basic-offset 4)
 #+end_src
@@ -816,6 +843,7 @@ Package for working on Embedded Controllers
 Add the Zig Mode
 #+begin_src emacs-lisp
   (use-package zig-mode
+    :hook ((zig-mode . lsp))
     :config
     (if (>= emacs-major-version 28)
       (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
@@ -1003,10 +1031,10 @@ Set up some lovely themes.
 #+begin_src emacs-lisp
   (use-package ef-themes
     :init
-    (setq ef-themes-to-toggle '(ef-cyprus ef-dream))
+    (setq ef-themes-to-toggle '(ef-trio-light ef-winter))
     (add-hook 'window-setup-hook
               (lambda ()
-                (load-theme 'ef-dream t))))
+                (load-theme 'ef-winter t))))
 #+end_src
 
 ** Niceties
