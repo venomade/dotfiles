@@ -8,6 +8,8 @@
   - [[#custom-functions][Custom Functions]]
   - [[#fix-annoyances][Fix Annoyances]]
   - [[#setup-line-numbers][Setup Line Numbers]]
+  - [[#use-spaces-instead-of-tabs][Use spaces instead of tabs]]
+  - [[#enable-column-indicator][Enable Column Indicator]]
 - [[#general][General]]
   - [[#avy][Avy]]
   - [[#colors][Colors]]
@@ -95,12 +97,24 @@ kill-this-buffer doesn't work in emacs 30 (relies on menubar visibility?) so thi
 Pops the current window out into it's own frame.
 #+begin_src emacs-lisp
   (defun pop-out-window-into-frame ()
-    "Pop out the current window into its own frame."
     (interactive)
     (let ((buffer (current-buffer)))
       (delete-window)
       (select-frame (make-frame))
       (set-window-buffer (selected-window) buffer)))
+#+end_src
+*** Pop Out Buffer
+Pops the current buffer out into it's own frame.
+#+begin_src emacs-lisp
+  (defun pop-out-buffer-into-frame ()
+    (interactive)
+    (let* ((current-buffer (current-buffer))
+           (previous-buffer (other-buffer (current-buffer) t)))  ;; Get the previous buffer in the window
+      ;; Switch the current window back to the previous buffer
+      (set-window-buffer (selected-window) previous-buffer)
+      ;; Create a new frame and show the original buffer there
+      (select-frame (make-frame))
+      (set-window-buffer (selected-window) current-buffer)))
 #+end_src
 
 ** Fix Annoyances
@@ -135,12 +149,20 @@ Vim style line numbers.
   (add-hook 'prog-mode-hook (lambda () (visual-line-mode -1)))
   (setq-default truncate-lines t)
 #+end_src
-*** Generally use spaces instead of tabs
-Generally, as in everywhere but Go.
+
+** Use spaces instead of tabs
+Generally use spaces instead of tabs, everywhere but Go.
 #+begin_src emacs-lisp
   (setq-default indent-tabs-mode nil)
-  (setq tab-width 4)
-  (setq tab-stop-list (number-sequence 4 200 4))
+  (setq-default tab-width 2)
+  (setq tab-stop-list (number-sequence 2 200 2))
+#+end_src
+
+** Enable Column Indicator
+Add a indicator for lines that are too long.
+#+begin_src emacs-lisp
+  (setq-default display-fill-column-indicator-column 80)
+  (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
 
 * General
@@ -265,7 +287,8 @@ Keybindings for my most common actions.
       "b k" '(kill-current-buffer :wk "Kill this buffer")
       "b n" '(next-buffer :wk "Next buffer")
       "b p" '(previous-buffer :wk "Previous buffer")
-      "b r" '(revert-buffer :wk "Reload buffer"))
+      "b r" '(revert-buffer :wk "Reload buffer")
+      "b f" '(pop-out-buffer-into-frame :wk "Frame buffer"))
 
     (vnmd/leader-keys
       "e" '(:ignore t :wk "Emacs")
@@ -281,6 +304,7 @@ Keybindings for my most common actions.
     (vnmd/leader-keys
       "f" '(:ignore t :wk "Open File")
       "f c" '((lambda () (interactive) (find-file "~/.emacs.d/config.org")) :wk "Open Emacs config")
+      "f t" '((lambda () (interactive) (find-file "~/Documents/TODO.org")) :wk "Open TODO List")
       "f f" '(counsel-fzf :wk "Find (File) Fuzzy")
       "f g" '(counsel-rg :wk "Find (Rip)Grep")
       "f p" '(find-file :wk "Find (File) Path")
@@ -294,10 +318,13 @@ Keybindings for my most common actions.
       "l f" '(lsp-format-buffer :wk "Format Code")
       "l g" '(lsp-ui-peek-find-definitions :wk "Goto Definition")
       "l i" '(lsp-ui-peek-find-implementation :wk "Implementation")
-      "l n" '(lsp-rename :wk "(Re)Name")
+      "l l" '(lsp :wk "LSP (Re)Start")
+      "l n" '(lsp-rename :wk "Rename")
       "l r" '(lsp-ui-peek-find-references :wk "References")
-      "l s" '(company-manual-begin :k "Suggest Completions" )
-      "l w" '(lsp-ui-flycheck-list :wk "Show Diagnostics"))
+      "l s" '(company-manual-begin :wk "Suggest Completions" )
+      "l e" '(:ignore t :wk "Errors")
+      "l e f" '(flycheck-list-errors :wk "File Diagnostics")
+      "l e p" '(lsp-ui-flycheck-list :wk "Project Diagnostics"))
 
     (vnmd/leader-keys
       "m" '(:ignore t :wk "Make")
@@ -783,13 +810,25 @@ Use go-mode, set tab-width there to 4 and add go's binaries to path.
           (concat
            (concat
             (concat
-             (expand-file-name "~/go/bin")
+             (expand-file-name "~/.go/bin")
              ":")
             (getenv "PATH"))))
 
   (setq exec-path
         (append exec-path
-                (list (expand-file-name "~/go/bin"))))
+                (list (expand-file-name "~/.go/bin"))))
+
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "/usr/local/go/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "/usr/local/go/bin"))))
 #+end_src
 **** Haskell
 Use haskell-mode and add ghcup's binaries to path.

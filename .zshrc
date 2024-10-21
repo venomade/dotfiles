@@ -58,10 +58,15 @@ export PATH="$HOME/.local/bin:$PATH"
 alias ec="emacsclient -t"
 alias ls="eza --icons -1"
 alias tm="tmux new -As0"
-alias vim="nvim"
-alias vi="nvim"
+# alias vim="nvim"
+# alias vi="nvim"
 alias sudo="sudo "
 alias zyp="zypper"
 
 . "$HOME/.cargo/env"
 [ -f "/home/venomade/.ghcup/env" ] && . "/home/venomade/.ghcup/env" # ghcup-env
+
+# Golang
+export PATH="$PATH:/usr/local/go/bin"
+export PATH="$PATH:$HOME/.go/bin"
+export GOPATH=$HOME/.go
