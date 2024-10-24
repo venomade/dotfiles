@@ -43,7 +43,7 @@ configuration entries.
 (deflayer arrows
   _                               home
   _                               end
-              left down up   rght ins
+              h    y    n    u    ins
   _    _
 )
 

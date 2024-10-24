@@ -1,2 +1,0 @@
-require("venomade")
-require("plugins")

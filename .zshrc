@@ -40,7 +40,7 @@ function plugin-load {
 }
 
 repos=(
-	Aloxaf/fzf-tab
+	# Aloxaf/fzf-tab
 	zdharma-continuum/fast-syntax-highlighting
 	joshskidmore/zsh-fzf-history-search
 	jackharrisonsherlock/common
@@ -49,19 +49,23 @@ repos=(
 plugin-load $repos
 
 # Plugin Configs
-zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+# zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 
 # Path
 export PATH="$HOME/.local/bin:$PATH"
+
+# Editor
+export EDITOR=kak
 
 # Aliases
 alias ec="emacsclient -t"
 alias ls="eza --icons -1"
 alias tm="tmux new -As0"
-# alias vim="nvim"
-# alias vi="nvim"
+alias vim="kak"
+alias vi="kak"
 alias sudo="sudo "
 alias zyp="zypper"
+alias k="kak"
 
 . "$HOME/.cargo/env"
 [ -f "/home/venomade/.ghcup/env" ] && . "/home/venomade/.ghcup/env" # ghcup-env
@@ -70,3 +74,13 @@ alias zyp="zypper"
 export PATH="$PATH:/usr/local/go/bin"
 export PATH="$PATH:$HOME/.go/bin"
 export GOPATH=$HOME/.go
+
+# Yazi
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}

@@ -1,0 +1,96 @@
+"$schema" = "https://yazi-rs.github.io/schemas/keymap.json"
+
+[manager]
+
+prepend_keymap = [
+	# { on = [ "w" ], exec = 'shell "$SHELL" --block --confirm', desc = "Open shell here" },
+	# { on = [ "W" ], exec = "tasks_show" },
+
+	# Navigation
+	{ on = [ "e" ], run = "arrow -1" },
+	{ on = [ "n" ], run = "arrow 1" },
+
+	{ on = [ "E" ], run = "arrow -5" },
+	{ on = [ "N" ], run = "arrow 5" },
+
+	{ on = [ "h" ], run = "leave" },
+	{ on = [ "i" ], run = "enter" },
+
+	{ on = [ "H" ], run = "back" },
+	{ on = [ "I" ], run = "forward" },
+
+	{ on = [ "<C-e>" ], run = "seek -5" },
+	{ on = [ "<C-n>" ], run = "seek 5" },
+
+	# Operation
+	{ on = [ "k" ], run = "link" },
+	{ on = [ "K" ], run = "link --relative" },
+
+	# Find
+	{ on = [ "j" ], run = "find_arrow" },
+	{ on = [ "J" ], run = "find_arrow --previous" },
+]
+
+[tasks]
+
+prepend_keymap = [
+	{ on = [ "W" ], run = "close" },
+
+	{ on = [ "e" ], run = "arrow -1" },
+	{ on = [ "n" ], run = "arrow 1" },
+]
+
+[select]
+
+prepend_keymap = [
+	{ on = [ "e" ], run = "arrow -1" },
+	{ on = [ "n" ], run = "arrow 1" },
+
+	{ on = [ "E" ], run = "arrow -5" },
+	{ on = [ "N" ], run = "arrow 5" },
+]
+
+[input]
+
+prepend_keymap = [
+	# Mode
+	{ on = [ "l" ],     run = "insert" },
+	{ on = [ "<C-h>" ], run = [ "move -999", "insert" ] },
+	{ on = [ "<C-i>" ], run = [ "move 999", "insert --append" ] },
+
+	# Character-wise movement
+	{ on = [ "h" ], run = "move -1" },
+	{ on = [ "i" ], run = "move 1" },
+
+	# Word-wise movement
+	{ on = [ "=" ], run = "forward --end-of-word" },
+
+	# Line-wise movement
+	{ on = [ "H" ], run = "move -999" },
+	{ on = [ "I" ], run = "move 999" },
+
+	# Cut/Yank/Paste
+	{ on = [ "x" ], run = [ "delete", "move 1 --in-operating" ] },
+
+	# Undo/Redo
+	{ on = [ "u" ], run = "undo" },
+	{ on = [ "U" ], run = "redo" },
+]
+
+[completion]
+
+prepend_keymap = [
+	{ on = [ "<C-e>" ], run = "arrow -1" },
+	{ on = [ "<C-n>" ], run = "arrow 1" },
+]
+
+[help]
+
+prepend_keymap = [
+	# Navigation
+	{ on = [ "e" ], run = "arrow -1" },
+	{ on = [ "n" ], run = "arrow 1" },
+
+	{ on = [ "E" ], run = "arrow -5" },
+	{ on = [ "N" ], run = "arrow 5" },
+]

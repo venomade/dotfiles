@@ -779,9 +779,9 @@ Specific language packages.
 Use rust-mode with treesitter and add cargo's binaries to path.
 #+begin_src emacs-lisp
   (use-package rust-mode
-    :hook ((rust-mode . lsp))
-    :init
-    (setq rust-mode-treesitter-derive t))
+    :hook ((rust-mode . lsp)))
+    ;;:init
+    ;;(setq rust-mode-treesitter-derive t))
 
   (setenv "PATH"
           (concat
@@ -1000,39 +1000,42 @@ Set fonts for both Monospace and Proportional text.
 Make ligature symbols out of common function symbols.
 #+begin_src emacs-lisp
     (dolist (char/ligature-re
-	     `((?-  . ,(rx (or (or "-->" "-<<" "->>" "-|" "-~" "-<" "->") (+ "-"))))
-	       (?/  . ,(rx (or (or "/==" "/=" "/>" "/**" "/*") (+ "/"))))
-	       (?*  . ,(rx (or (or "*>" "*/") (+ "*"))))
-	       (?<  . ,(rx (or (or "<<=" "<<-" "<|||" "<==>" "<!--" "<=>" "<||" "<|>" "<-<"
-				   "<==" "<=<" "<-|" "<~>" "<=|" "<~~" "<$>" "<+>" "</>"
-				   "<*>" "<->" "<=" "<|" "<:" "<>"  "<$" "<-" "<~" "<+"
-				   "</" "<*")
-			       (+ "<"))))
-	       (?:  . ,(rx (or (or ":?>" "::=" ":>" ":<" ":?" ":=") (+ ":"))))
-	       (?=  . ,(rx (or (or "=>>" "==>" "=/=" "=!=" "=>" "=:=") (+ "="))))
-	       (?!  . ,(rx (or (or "!==" "!=") (+ "!"))))
-	       (?>  . ,(rx (or (or ">>-" ">>=" ">=>" ">]" ">:" ">-" ">=") (+ ">"))))
-	       (?&  . ,(rx (+ "&")))
-	       (?|  . ,(rx (or (or "|->" "|||>" "||>" "|=>" "||-" "||=" "|-" "|>"
-				   "|]" "|}" "|=")
-			       (+ "|"))))
-	       (?.  . ,(rx (or (or ".?" ".=" ".-" "..<") (+ "."))))
-	       (?+  . ,(rx (or "+>" (+ "+"))))
-	       (?\[ . ,(rx (or "[<" "[|")))
-	       (?\{ . ,(rx "{|"))
-	       (?\? . ,(rx (or (or "?." "?=" "?:") (+ "?"))))
-	       (?#  . ,(rx (or (or "#_(" "#[" "#{" "#=" "#!" "#:" "#_" "#?" "#(")
-			       (+ "#"))))
-	       (?\; . ,(rx (+ ";")))
-	       (?_  . ,(rx (or "_|_" "__")))
-	       (?~  . ,(rx (or "~~>" "~~" "~>" "~-" "~@")))
-	       (?$  . ,(rx "$>"))
-	       (?^  . ,(rx "^="))
-	       (?\] . ,(rx "]#"))))
+       `((?-  . ,(rx (or (or "-->" "-<<" "->>" "-|" "-~" "-<" "->") (+ "-"))))
+         (?/  . ,(rx (or (or "/==" "/=" "/>" "/**" "/*") (+ "/"))))
+         (?*  . ,(rx (or (or "*>" "*/") (+ "*"))))
+         (?<  . ,(rx (or (or "<<=" "<<-" "<|||" "<==>" "<!--" "<=>" "<||" "<|>" "<-<"
+           "<==" "<=<" "<-|" "<~>" "<=|" "<~~" "<$>" "<+>" "</>"
+           "<*>" "<->" "<=" "<|" "<:" "<>"  "<$" "<-" "<~" "<+"
+           "</" "<*")
+             (+ "<"))))
+         (?:  . ,(rx (or (or ":?>" "::=" ":>" ":<" ":?" ":=") (+ ":"))))
+         (?=  . ,(rx (or (or "=>>" "==>" "=/=" "=!=" "=>" "=:=") (+ "="))))
+         (?!  . ,(rx (or (or "!==" "!=") (+ "!"))))
+         (?>  . ,(rx (or (or ">>-" ">>=" ">=>" ">]" ">:" ">-" ">=") (+ ">"))))
+         (?&  . ,(rx (+ "&")))
+         (?|  . ,(rx (or (or "|->" "|||>" "||>" "|=>" "||-" "||=" "|-" "|>"
+           "|]" "|}" "|=")
+             (+ "|"))))
+         (?.  . ,(rx (or (or ".?" ".=" ".-" "..<") (+ "."))))
+         (?+  . ,(rx (or "+>" (+ "+"))))
+         (?\[ . ,(rx (or "[<" "[|")))
+         (?\{ . ,(rx "{|"))
+         (?\? . ,(rx (or (or "?." "?=" "?:") (+ "?"))))
+         (?#  . ,(rx (or (or "#_(" "#[" "#{" "#=" "#!" "#:" "#_" "#?" "#(")
+             (+ "#"))))
+         (?\; . ,(rx (+ ";")))
+         (?_  . ,(rx (or "_|_" "__")))
+         (?~  . ,(rx (or "~~>" "~~" "~>" "~-" "~@")))
+         (?$  . ,(rx "$>"))
+         (?^  . ,(rx "^="))
+         (?\] . ,(rx "]#"))))
       (let ((char (car char/ligature-re))
-	    (ligature-re (cdr char/ligature-re)))
-	(set-char-table-range composition-function-table char
-			      `([,ligature-re 0 font-shape-gstring]))))
+      (ligature-re (cdr char/ligature-re)))
+  (set-char-table-range composition-function-table char
+            `([,ligature-re 0 font-shape-gstring]))))
+
+  ;;HACK for Broken Ligatures
+  (add-hook 'prog-mode-hook 'variable-pitch-mode)
 #+end_src
 *** Font Zooming
 Bind both scroling and +/- to zooming.
