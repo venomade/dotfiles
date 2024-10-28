@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Generate base filename with timestamp
+base_filename=$(date +"%m-%d-%Y_%H-%M-%S")
+extension=".png"
+
+# Initialize full filename
+filename="${base_filename}${extension}"
+counter=1
+
+# Check if file exists and append incremental suffix if needed
+while [[ -e "$filename" ]]; do
+    filename="${base_filename}-${counter}${extension}"
+    ((counter++))
+done
+
+# Output the available filename
+wayshot -f "$HOME/Pictures/Screenshots/$filename" -s "$(slurp)"

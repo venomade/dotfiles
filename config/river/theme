@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Rose Pine
+rp_base=191724
+rp_text=e0def4
+rp_overlay=26233a
+rp_love=eb6f92
+rp_pine=31748f
+rp_gold=f6c177
+rp_foam=9ccfd8
+rp_iris=c4a7e7
+rp_rose=ebbcba
+rp_text=e0def4
+rp_muted=6e6a86
+
+riverctl background-color       0x$rp_base
+riverctl border-color-focused   0x$rp_rose
+riverctl border-color-unfocused 0x$rp_muted
+riverctl border-color-urgent    0x$rp_love

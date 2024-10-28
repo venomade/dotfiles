@@ -1,0 +1,1107 @@
+#+TITLE: Venomade's Emacs Config
+#+AUTHOR: Venomade
+#+STARTUP: showeverything
+
+* Table of Contents :toc_2:
+- [[#straight-package-manager][Straight Package Manager]]
+- [[#configs][Configs]]
+  - [[#custom-functions][Custom Functions]]
+  - [[#fix-annoyances][Fix Annoyances]]
+  - [[#setup-line-numbers][Setup Line Numbers]]
+  - [[#use-spaces-instead-of-tabs][Use spaces instead of tabs]]
+  - [[#enable-column-indicator][Enable Column Indicator]]
+- [[#general][General]]
+  - [[#avy][Avy]]
+  - [[#colors][Colors]]
+  - [[#diminish][Diminish]]
+  - [[#evil-mode][Evil Mode]]
+  - [[#general-keybindings][General Keybindings]]
+  - [[#magit][Magit]]
+  - [[#ivy-counsel][Ivy (Counsel)]]
+  - [[#pdf-tools][PDF Tools]]
+  - [[#simple-modeline][Simple Modeline]]
+  - [[#smart-parentheses-pairing][Smart Parentheses Pairing]]
+  - [[#undo-tree][Undo Tree]]
+  - [[#which-key][Which Key]]
+- [[#dashboard][Dashboard]]
+  - [[#dashboard-config][Dashboard Config]]
+  - [[#clean-up][Clean Up]]
+- [[#org-mode][Org Mode]]
+  - [[#table-of-contents][Table of Contents]]
+  - [[#bullet-headers][Bullet Headers]]
+  - [[#org-agenda][Org Agenda]]
+  - [[#org-babel][Org Babel]]
+  - [[#org-tempo][Org Tempo]]
+  - [[#mixed-pitch][Mixed Pitch]]
+  - [[#styling][Styling]]
+- [[#programming][Programming]]
+  - [[#lsp-autocomplete][LSP Autocomplete]]
+  - [[#company-mode][Company Mode]]
+  - [[#codeium-completions][Codeium Completions]]
+  - [[#utilities][Utilities]]
+- [[#terminal][Terminal]]
+  - [[#vterm][VTerm]]
+- [[#user-interface][User Interface]]
+  - [[#add-nerd-icons][Add Nerd Icons]]
+  - [[#kind-icons][Kind Icons]]
+  - [[#fonts][Fonts]]
+  - [[#padding][Padding]]
+  - [[#theme][Theme]]
+  - [[#niceties][Niceties]]
+
+* Straight Package Manager
+I'm using the Straight package manager instead of use-package because it is only available in Emacs 29 and above.
+#+begin_src emacs-lisp
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	(bootstrap-version 6))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+
+  (setq straight-use-package-by-default t)
+#+end_src
+
+* Configs
+** Custom Functions
+*** Cursor follow on split
+This is so that action can be taken as soon as a split takes place, to either close/move the window or perform an action inside of it.
+#+begin_src emacs-lisp
+  (defun split-and-follow-horizontally()
+    (interactive)
+    (split-window-below)
+    (balance-windows)
+    (other-window 1))
+
+  (defun split-and-follow-vertically()
+    (interactive)
+    (split-window-right)
+    (balance-windows)
+    (other-window 1))
+#+end_src
+*** Kill Current Buffer
+kill-this-buffer doesn't work in emacs 30 (relies on menubar visibility?) so this is a small implementation of window.el's /C-x 4 0/.
+#+begin_src emacs-lisp
+  (defun kill-current-buffer()
+    (interactive)
+    (let ((buffer-to-kill (current-buffer))))
+    (kill-buffer (current-buffer)))
+#+end_src
+*** Pop Out Window
+Pops the current window out into it's own frame.
+#+begin_src emacs-lisp
+  (defun pop-out-window-into-frame ()
+    (interactive)
+    (let ((buffer (current-buffer)))
+      (delete-window)
+      (select-frame (make-frame))
+      (set-window-buffer (selected-window) buffer)))
+#+end_src
+*** Pop Out Buffer
+Pops the current buffer out into it's own frame.
+#+begin_src emacs-lisp
+  (defun pop-out-buffer-into-frame ()
+    (interactive)
+    (let* ((current-buffer (current-buffer))
+           (previous-buffer (other-buffer (current-buffer) t)))  ;; Get the previous buffer in the window
+      ;; Switch the current window back to the previous buffer
+      (set-window-buffer (selected-window) previous-buffer)
+      ;; Create a new frame and show the original buffer there
+      (select-frame (make-frame))
+      (set-window-buffer (selected-window) current-buffer)))
+#+end_src
+
+** Fix Annoyances
+*** Disable Backups
+Living on the edge.
+#+begin_src emacs-lisp
+  (setq make-backup-files nil)
+  (setq auto-save-default nil)
+#+end_src
+*** Disable Bell
+Only flash, no sound, it gets annoying.
+#+begin_src emacs-lisp
+  (setq ring-bell-function 'ignore)
+#+end_src
+*** Hide Warnings
+Fixing warnings is for nerds. This is basically necessary after more than 5 packages.
+#+begin_src emacs-lisp
+  (setq warning-minimum-level :emergency)
+#+end_src
+*** Add Scroll Margin
+This adds a scroll margin at the top and bottom of 12 lines to make it easier to scroll through the buffer.
+#+begin_src emacs-lisp
+  (setq scroll-margin 12)
+#+end_src
+
+** Setup Line Numbers
+Vim style line numbers.
+#+begin_src emacs-lisp
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+  (setq display-line-numbers-type 'relative)
+  (global-visual-line-mode t)
+  (add-hook 'prog-mode-hook (lambda () (visual-line-mode -1)))
+  (setq-default truncate-lines t)
+#+end_src
+
+** Use spaces instead of tabs
+Generally use spaces instead of tabs, everywhere but Go.
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 2)
+  (setq tab-stop-list (number-sequence 2 200 2))
+#+end_src
+
+** Enable Column Indicator
+Add a indicator for lines that are too long.
+#+begin_src emacs-lisp
+  (setq-default display-fill-column-indicator-column 80)
+  (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+#+end_src
+
+* General
+** Avy
+#+begin_src emacs-lisp
+  (use-package avy
+    :after evil-collection
+    :config
+    (setq avy-keys '(?a ?r ?s ?t ?n ?e ?i ?o)
+          avy-all-windows nil)
+    (define-key evil-normal-state-map (kbd "-") 'avy-goto-char))
+#+end_src
+
+** Colors
+*** Highlight Todo
+Highlight TODO items so they can be reviewed later.
+#+begin_src emacs-lisp
+  (use-package hl-todo
+    :diminish hl-todo-mode
+    :hook ((org-mode . hl-todo-mode)
+           (prog-mode . hl-todo-mode))
+
+    :config
+    (setq hl-todo-highlight-punctuation ":"
+          hl-todo-highlight-faces
+          `(("TODO"       warning bold)
+            ("FIXME"      error bold)
+            ("HACK"       font-lock-constant-face bold)
+            ("REVIEW"     font-lock-doc-face bold)
+            ("NOTE"       success bold)
+            ("DEPRECATED" font-lock-doc-face bold))))
+#+end_src
+*** Rainbow Mode
+Highlights color hex codes with their color
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+    :diminish rainbow-mode
+    :hook ((org-mode . rainbow-mode)
+           (prog-mode . rainbow-mode)))
+#+end_src
+*** Rainbow Delimiters
+Makes different brackets and other delimeters levels different colors so they can be quickly distinguished.
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :diminish rainbow-delimiters-mode
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+** Diminish
+Hides modes from the modeline to make it cleaner
+#+begin_src emacs-lisp
+  (use-package diminish)
+#+end_src
+
+** Evil Mode
+*** Evil Mode Package
+Adds Vim motions to Emacs, I was a vim user and have no interest in getting carpal tunnel, sue me.
+#+begin_src emacs-lisp
+  (use-package evil
+    :diminish evil-mode
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-vsplit-window-right t)
+    (setq evil-split-window-below t)
+    (setq evil-want-C-u-scroll t)
+    (evil-mode))
+#+end_src
+*** Evil Don't Kill Emacs
+Rebind Evil mode's commands to not kill Emacs, just the buffer.
+#+begin_src emacs-lisp
+  (defun save-and-kill-buffer()
+    (interactive)
+    (save-buffer)
+    (kill-buffer))
+
+  (global-set-key [remap evil-quit] 'kill-current-buffer)
+  (evil-ex-define-cmd "wq" 'save-and-kill-buffer)
+#+end_src
+*** Evil Collection
+Adds Vim motions to even more Emacs packages.
+#+begin_src emacs-lisp
+  (use-package evil-collection
+    :after evil
+    :config
+    (setq evil-collection-mode-list '(dashboard dired ibuffer magit))
+    (evil-collection-init))
+#+end_src
+
+** General Keybindings
+Keybindings for my most common actions.
+#+begin_src emacs-lisp
+  (use-package general
+    :diminish general-override-mode
+    :config
+    (general-evil-setup)
+
+    ;; Set 'SPC' as the leader key
+    ;; and 'C-SPC' as the global leader
+    (global-unset-key (kbd "C-SPC"))
+    (general-create-definer vnmd/leader-keys
+                            :states '(normal insert visual emacs)
+                            :keymaps 'override
+                            :prefix "SPC"
+                            :global-prefix "C-SPC") ;; For insert mode
+
+    (vnmd/leader-keys
+      "/" '(swiper t :wk "Search")
+      "c c" '(codeium-toggle :wk "Toggle Codeium")
+      "g" '(magit-status :wk "Magit")
+      "r" '(:ignore t :wk "Reload")
+      "r c" '((lambda () (interactive) (load-file "~/.emacs.d/init.el")) :wk "Reload Config"))
+
+    (vnmd/leader-keys
+      "SPC" '(:ignore t :wk "SPC")
+      "SPC w" '(avy-goto-word-0-below :wk "Goto word below")
+      "SPC b" '(avy-goto-word-0-above :wk "Goto word above"))
+
+    (vnmd/leader-keys
+      "b" '(:ignore t :wk "Buffer")
+      "b b" '(switch-to-buffer :wk "Switch buffer")
+      "b k" '(kill-current-buffer :wk "Kill this buffer")
+      "b n" '(next-buffer :wk "Next buffer")
+      "b p" '(previous-buffer :wk "Previous buffer")
+      "b r" '(revert-buffer :wk "Reload buffer")
+      "b f" '(pop-out-buffer-into-frame :wk "Frame buffer"))
+
+    (vnmd/leader-keys
+      "e" '(:ignore t :wk "Emacs")
+      "e b" '(eval-buffer :wk "Evaluate Elisp buffer")
+      "e d" '(eval-defun :wk "Evaluate Elisp defun")
+      "e e" '(eval-expression :wk "Evaluate Elisp expression")
+      "e l" '(eval-last-sexp :wk "Evaluate Elisp expression before point")
+      "e r" '(eval-region :wk "Evaluate Elisp region")
+      "e s" '(eshell :wk "Eshell")
+      "e t" '(ef-themes-toggle :wk "Theme Toggle")
+      "e f" '(ef-themes-select :wk "Select an EF-Theme"))
+
+    (vnmd/leader-keys
+      "f" '(:ignore t :wk "Open File")
+      "f c" '((lambda () (interactive) (find-file "~/.emacs.d/config.org")) :wk "Open Emacs config")
+      "f t" '((lambda () (interactive) (find-file "~/Documents/TODO.org")) :wk "Open TODO List")
+      "f f" '(counsel-fzf :wk "Find (File) Fuzzy")
+      "f g" '(counsel-rg :wk "Find (Rip)Grep")
+      "f p" '(find-file :wk "Find (File) Path")
+      "f r" '(counsel-recentf :wk "Recent file"))
+
+    (vnmd/leader-keys
+      "l" '(:ignore t :wk "LSP")
+      "l a" '(lsp-execute-code-action :wk "Code Action")
+      "l d" '(lsp-describe-thing-at-point :wk "Documentation")
+      "l c" '(comment-line :wk "Comment line")
+      "l f" '(lsp-format-buffer :wk "Format Code")
+      "l g" '(lsp-ui-peek-find-definitions :wk "Goto Definition")
+      "l i" '(lsp-ui-peek-find-implementation :wk "Implementation")
+      "l l" '(lsp :wk "LSP (Re)Start")
+      "l n" '(lsp-rename :wk "Rename")
+      "l r" '(lsp-ui-peek-find-references :wk "References")
+      "l s" '(company-manual-begin :wk "Suggest Completions" )
+      "l e" '(:ignore t :wk "Errors")
+      "l e f" '(flycheck-list-errors :wk "File Diagnostics")
+      "l e p" '(lsp-ui-flycheck-list :wk "Project Diagnostics"))
+
+    (vnmd/leader-keys
+      "m" '(:ignore t :wk "Make")
+      "m c" '(compile :wk "Compile")
+      "m r" '(recompile :wk "Recompile"))
+
+    (vnmd/leader-keys
+      "o" '(:ignore t :wk "Org Mode")
+      "o a" '(org-agenda :wk "Open Agenda")
+      "o A" '((lambda () (interactive) (find-file "~/Documents/Org/agenda.org")) :wk "Edit Agenda")
+      "o d" '(:ignore t :wk "Date")
+      "o d n" '(org-timestamp-up :wk "Next Date")
+      "o d p" '(org-timestamp-down :wk "Previous Date")
+      "o d d" '(org-time-stamp :wk "Insert Date")
+      "o e" '(:ignore t :wk "Org Export")
+      "o e h" '(org-html-export-to-html :wk "Export to HTML"))
+
+    (vnmd/leader-keys
+      "p" '(:ignore t :wk "Project")
+      "p b" '(project-list-buffers :wk "Project Buffers")
+      "p c" '(project-compile :wk "Compile Project")
+      "p e" '(project-dired :wk "Explore Project")
+      "p f" '(project-find-file :wk "Find File")
+      "p g" '(project-find-regexp :wk "Grep Project")
+      "p o" '(project-find-dir :wk "Open Project")
+      "p t" '(treemacs :wk "Toggle Project Sidebar"))
+
+    (vnmd/leader-keys
+      "t" '(:ignore t :wk "Terminal")
+      "t t" '(vterm-toggle :wk "Toggle Terminal"))
+
+    (vnmd/leader-keys
+      "u" '(undo-tree-visualize :wk "Undo Tree"))
+
+    (vnmd/leader-keys
+      "w" '(:ignore t :wk "Windows")
+
+      "w h" '(evil-window-left :wk "Window Left")
+      "w <left>" '(evil-window-left :wk "Window Left")
+
+      "w n" '(evil-window-down :wk "Window Down")
+      "w <down>" '(evil-window-down :wk "Window Down")
+
+      "w e" '(evil-window-up :wk "Window Up")
+      "w <up>" '(evil-window-up :wk "Window Up")
+
+      "w i" '(evil-window-right :wk "Window Right")
+      "w <right>" '(evil-window-right :wk "Window Right")
+
+      "w u" '(winner-undo :wk "Undo Movement")
+      "w r" '(winner-redo :wk "Redo Movement")
+
+      "w c" '(evil-window-delete :wk "Close Window")
+      "w o" '(evil-window-new :wk "Open Window")
+      "w v" '(evil-window-vsplit :wk "Split Window (Vertical)")
+      "w s" '(evil-window-split :wk "Split Window (Horizontal)")
+      "w f" '(pop-out-window-into-frame :wk "Frame Window"))
+
+    (vnmd/leader-keys
+      :keymaps 'org-mode-map
+      "c '" '(org-edit-src-code :wk "Edit Org Source Block"))
+    (vnmd/leader-keys
+      :keymaps 'org-src-mode-map
+      "c '" '(org-edit-src-exit :wk "Exit Org Source Block"))
+    )
+#+end_src
+
+** Magit
+A very extensive Git GUI for Emacs.
+#+begin_src emacs-lisp
+  (use-package magit
+    :after evil-collection)
+#+end_src
+
+** Ivy (Counsel)
+*** Counsel
+Adds better fuzzy completion to many Emacs commands.
+#+begin_src emacs-lisp
+  (use-package counsel
+    :diminish counsel-mode
+    :after ivy
+    :config (counsel-mode))
+#+end_src
+*** Counsel Web
+Adds an interactible web search into emacs.
+#+begin_src emacs-lisp
+  (use-package counsel-web)
+  (setq counsel-web-search-action 'browse-url)
+#+end_src
+*** Ivy
+Adds fuzzy completion to basic Emacs commands.
+#+begin_src emacs-lisp
+  (use-package ivy
+    :diminish ivy-mode
+    :custom
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-count-format "(%d/%d) ")
+    (setq enable-recursive-minibuffers t)
+    :config
+    (ivy-mode))
+#+end_src
+*** Ivy Rich
+Adds Icons to all the new fuzzy completed Emacs commands.
+#+begin_src emacs-lisp
+  (use-package ivy-rich
+    :diminish ivy-rich-mode
+    :after ivy
+    :init (ivy-rich-mode 1)
+    :custom
+    (ivy-virtual-abbreviate 'full
+                            ivy-rich-switch-buffer-align-virtual-buffer t
+                            ivy-rich-path-style 'abbrev))
+#+end_src
+
+** PDF Tools
+View PDFs within Emacs and have their colours match the theme.
+*** Install and Theme
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :init
+    (pdf-tools-install)
+    :config
+    (pdf-tools-install)
+    :hook (pdf-view-mode . pdf-view-themed-minor-mode))
+#+end_src
+*** Evil mode compatibility fix
+Fix an evil-mode pdf-view-mode compatibility bug that draws a flashing border around the PDF.
+#+begin_src emacs-lisp
+  (evil-set-initial-state 'pdf-view-mode 'emacs)
+  (add-hook 'pdf-view-mode-hook
+    (lambda ()
+      (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))
+#+end_src
+
+** Simple Modeline
+Make the modeline simple, yet still display helpful information.
+#+begin_src emacs-lisp
+  (use-package simple-modeline
+    :diminish simple-modeline-mode
+    :custom
+    (simple-modeline-segments
+    '((simple-modeline-segment-modified
+       simple-modeline-segment-buffer-name
+       simple-modeline-segment-position)
+      (simple-modeline-segment-vc
+       ;;simple-modeline-segment-minor-modes
+       ;;simple-modeline-segment-misc-info
+       ;;simple-modeline-segment-process
+       simple-modeline-segment-major-mode)))
+    :hook (after-init . simple-modeline-mode))
+#+end_src
+
+** Smart Parentheses Pairing
+Automatically deals with parentheses in pairs.
+#+begin_src emacs-lisp
+  (use-package smartparens
+    :diminish smartparens-mode
+    :hook (prog-mode text-mode markdown-mode)
+    :config
+    (require 'smartparens-config))
+#+end_src
+
+** Undo Tree
+Makes undo history like a Git commit tree, very powerful.
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :diminish undo-tree-mode
+    :config
+    (setq undo-tree-auto-save-history nil)
+    (evil-set-undo-system 'undo-tree)
+    (add-hook 'evil-local-mode-hook 'turn-on-undo-tree-mode))
+#+end_src
+
+** Which Key
+After pressing a key and a half-second delay, list out the possible next keys to perform a shortcut.
+#+begin_src emacs-lisp
+  (use-package which-key
+    :diminish which-key-mode
+    :init
+    (which-key-mode 1)
+    :config
+    (setq which-key-side-window-location 'bottom
+          which-key-sort-order #'which-key-key-order-alpha
+          which-key-sort-uppercase-first nil
+          which-key-add-column-padding 1
+          which-key-max-display-columns nil
+          which-key-min-display-lines 6
+          which-key-side-window-slot -10
+          which-key-side-window-max-height 0.25
+          which-key-idle-delay 0.4
+          which-key-max-description-length 25
+          which-key-allow-imprecise-window-fit t
+          which-key-separator " -> " ))
+#+end_src
+
+* Dashboard
+** Dashboard Config
+A dashboard for quick actions after entering Emacs.
+#+begin_src emacs-lisp
+  (use-package welcome-dashboard
+    :diminish welcome-dashboard-mode
+    :straight '(:type git :host github :repo "konrad1977/welcome-dashboard")
+    :config
+    (setq welcome-dashboard-latitude 52.0848
+          welcome-dashboard-longitude 0.4368 ;; latitude and longitude must be set to show weather information
+          welcome-dashboard-path-max-length 75
+          welcome-dashboard-use-fahrenheit nil
+          welcome-dashboard-min-left-padding 10
+          welcome-dashboard-image-file "~/.emacs.d/EmacsLogo.png"
+          welcome-dashboard-image-width 261
+          welcome-dashboard-image-height 220
+          welcome-dashboard-max-number-of-todos 5
+          welcome-dashboard-title "Welcome Venomade. Time to Emacs!")
+    (welcome-dashboard-create-welcome-hook))
+
+#+end_src
+
+** Clean Up
+*** Hide Mode Line
+Hide the modeline in the dashboard.
+#+begin_src emacs-lisp
+  (use-package hide-mode-line
+    :hook
+    (welcome-dashboard-mode . hide-mode-line-mode))
+#+end_src
+*** Hide messages
+Hide startup messages, like 'hide warnings' but for information tooltips.
+#+begin_src emacs-lisp
+  (defun display-startup-echo-area-message ()
+    (message ""))
+  (setq inhibit-startup-message t)
+  (setq inhibit-startup-echo-area-message t)
+
+  (defun dashboard-quiet()
+    "Shut up those messages"
+    (message nil))
+
+  (add-hook 'dashboard-quiet 'welcome-dashboard-mode)
+#+end_src
+
+* Org Mode
+** Table of Contents
+Automatically generate a table of contents for an Org file.
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :diminish toc-org-mode
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable)
+    :config (setq org-src-window-setup 'current-window))
+  (add-hook 'org-mode-hook 'org-indent-mode)
+#+end_src
+
+** Bullet Headers
+Stylize Org Mode headers with Nerd Icons.
+#+begin_src emacs-lisp
+  (use-package org-bullets
+    :diminish org-bullets-mode
+    :config
+    (setq org-bullets-bullet-list '(
+                                    "•"
+                                    "•"
+                                    "•"
+                                    "•"
+                                    "•")))
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+** Org Agenda
+Manage a Todo list, a Calendar, and other organization tools with Org.
+#+begin_src emacs-lisp
+  (setq org-agenda-files '("~/Documents/Org/agenda.org"))
+  (setq org-fancy-priorities-list '("[A]" "[B]" "[C]")
+        org-priority-faces
+        '((?A :foreground "#ff6c6b" :weight bold)
+          (?B :foreground "#ffff91" :weight bold)
+          (?C :foreground "#aaffaa" :weight bold)))
+  (setq org-agenda-custom-commands
+        '(("v" "View Agenda"
+           ((tags "PRIORITY=\"A\""
+                  ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                   (org-agenda-overriding-header "HIGH PRIORITY:")))
+            (tags "PRIORITY=\"B\""
+                  ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                   (org-agenda-overriding-header "Medium Priority:")))
+            (tags "PRIORITY=\"C\""
+                  ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                   (org-agenda-overriding-header "low priority:")))
+            (agenda "")
+            (alltodo "")))))
+#+end_src
+
+** Org Babel
+Setup literate progamming in Org Mode.
+*** Config
+Don't ask for conformation when evaluating source blocks.
+#+begin_src emacs-lisp
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+*** Load Languages
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)
+     (scheme . t)))
+#+end_src
+
+** Org Tempo
+This provides shorthands for Org functions.
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
+** Mixed Pitch
+Allow Monospace fonts and Proportional fonts in the same buffer, enabling it for Org Mode.
+#+begin_src emacs-lisp
+  (use-package mixed-pitch
+    :diminish mixed-pitch-mode
+    :hook
+    (org-mode . mixed-pitch-mode))
+#+end_src
+
+** Styling
+Hide markers for bold, italic and other types of text styling.
+#+begin_src emacs-lisp
+  (setq org-hide-emphasis-markers t)
+#+end_src
+
+* Programming
+** LSP Autocomplete
+Use the LSP-Mode backend.
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :init (setq gc-cons-threshold 100000000
+                lsp-headerline-breadcrumb-enable nil)
+    :commands lsp)
+
+  (use-package lsp-ui
+    :config
+    (define-key evil-normal-state-map (kbd "K") 'lsp-ui-doc-toggle)
+    :commands lsp-ui-mode)
+
+  (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+
+  (use-package dap-mode)
+
+  ;; Add ~/.local/bin to PATH for lsp
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.local/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.local/bin"))))
+#+end_src
+
+** Company Mode
+Add Autocomplete UI.
+#+begin_src emacs-lisp
+  (use-package company
+    :hook
+    (prog-mode . company-mode)
+    :config
+    (setq company-minimum-prefix-length 1
+          company-tooltip-minimum-width 70
+          company-tooltip-maximum-width 70
+          company-idle-delay 0.0))
+
+  (use-package company-prescient
+    :hook (company-mode . company-prescient-mode))
+
+  (use-package company-quickhelp
+    :init
+    (company-quickhelp-mode))
+
+  (with-eval-after-load 'company
+    (define-key company-active-map (kbd "<return>") nil)
+    (define-key company-active-map (kbd "RET") nil)
+    (define-key company-active-map (kbd "<C-return>") #'company-complete-selection)
+    (define-key company-active-map (kbd "<C-tab>") #'company-complete-common-or-cycle)
+    (define-key company-active-map (kbd "<tab>") #'company-complete-selection))
+#+end_src
+
+** Codeium Completions
+Toggleable AI-Powered Code Completion.
+#+begin_src emacs-lisp
+  (use-package codeium
+    :straight '(:type git :host github :repo "Exafunction/codeium.el")
+    :config
+    (setq use-dialog-box nil)
+    (setq codeium-api-enabled
+          (lambda (api)
+            (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
+    (defun my-codeium/document/text ()
+      (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
+    (defun my-codeium/document/cursor_offset ()
+      (codeium-utf8-byte-length
+       (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
+    (setq codeium/document/text 'my-codeium/document/text)
+    (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
+
+  (defun add-codeium-completion ()
+    (interactive)
+    (setq completion-at-point-functions
+          (cons 'codeium-completion-at-point
+                completion-at-point-functions))
+    (setq-local company-frontends
+                '(company-pseudo-tooltip-frontend
+                  company-preview-frontend))
+    (setq company-minimum-prefix-length 0))
+
+  (defun remove-codeium-completion ()
+    (interactive)
+    (setq completion-at-point-functions
+          (delete 'codeium-completion-at-point
+                  completion-at-point-functions))
+    (setq company-frontends
+          (eval (car (get 'company-frontends 'standard-value))))
+    (setq company-minimum-prefix-length 2))
+
+  (defun codeium-toggle ()
+    (interactive)
+    (if (member 'codeium-completion-at-point completion-at-point-functions)
+        (remove-codeium-completion)
+      (add-codeium-completion)))
+#+end_src
+
+** Utilities
+*** Flycheck
+Syntax checking for Emacs.
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :diminish flycheck-mode
+    :defer t
+    :init (global-flycheck-mode))
+#+end_src
+*** Tree Sitter
+Insane syntax highlighting.
+#+begin_src emacs-lisp
+  (use-package tree-sitter)
+  (use-package tree-sitter-langs)
+
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+#+end_src
+*** Languages
+Specific language packages.
+**** Rust
+Use rust-mode with treesitter and add cargo's binaries to path.
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :hook ((rust-mode . lsp)))
+    ;;:init
+    ;;(setq rust-mode-treesitter-derive t))
+
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.cargo/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.cargo/bin"))))
+  (use-package flycheck-rust
+    :config
+    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+#+end_src
+**** Go
+Use go-mode, set tab-width there to 4 and add go's binaries to path.
+#+begin_src emacs-lisp
+  (use-package go-mode
+    :hook ((go-mode . lsp))
+    :config
+    (add-hook 'go-mode (lambda () (setq tab-width 4))))
+
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.go/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.go/bin"))))
+
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "/usr/local/go/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "/usr/local/go/bin"))))
+#+end_src
+**** Haskell
+Use haskell-mode and add ghcup's binaries to path.
+#+begin_src emacs-lisp
+  (use-package haskell-mode
+    :hook ((haskell-mode . lsp)))
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.ghcup/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.ghcup/bin"))))
+
+  (use-package lsp-haskell
+    :after lsp-mode
+    :config
+    (setq lsp-haskell-server-path "haskell-language-server-wrapper"))
+#+end_src
+**** C/C++
+Configure some settings for C & C++.
+#+begin_src emacs-lisp
+  (add-hook 'c++-mode-hook #'lsp)
+  (add-hook 'c-mode-hook #'lsp)
+  (setq c-default-style "linux"
+        c-basic-offset 4)
+#+end_src
+**** PlatformIO
+Package for working on Embedded Controllers
+#+begin_src emacs-lisp
+  (use-package platformio-mode)
+  (setenv "PATH"
+          (concat
+           (concat
+            (concat
+             (expand-file-name "~/.platformio/penv/bin")
+             ":")
+            (getenv "PATH"))))
+
+  (setq exec-path
+        (append exec-path
+                (list (expand-file-name "~/.platformio/penv/bin"))))
+  (add-hook 'c++-mode-hook (lambda ()
+                             (platformio-conditionally-enable)))
+#+end_src
+**** Zig
+Add the Zig Mode
+#+begin_src emacs-lisp
+  (use-package zig-mode
+    :hook ((zig-mode . lsp))
+    :config
+    (if (>= emacs-major-version 28)
+      (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+    (progn
+      (defun colorize-compilation-buffer ()
+        (let ((inhibit-read-only t))
+          (ansi-color-apply-on-region compilation-filter-start (point))))
+      (add-hook 'compilation-filter-hook 'colorize-compilation-buffer))))
+#+end_src
+
+* Terminal
+** VTerm
+Add a more traditional terminal to Emacs.
+*** VTerm Package
+#+begin_src emacs-lisp
+  (use-package vterm
+    :config
+    (setq shell-file-name "/bin/zsh"
+          vterm-max-scrollback 5000))
+#+end_src
+*** VTerm Toggle
+Toggle VTerm with 'SPC-t-t'
+#+begin_src emacs-lisp
+  (use-package vterm-toggle
+    :after vterm
+    :config
+    (setq vterm-toggle-fullscreen-p nil)
+    (setq vterm-toggle-scope 'project)
+    (add-to-list 'display-buffer-alist
+                 '((lambda (buffer-or-name _)
+                     (let ((buffer (get-buffer buffer-or-name)))
+                       (with-current-buffer buffer
+                         (or (equal major-mode 'vterm-mode)
+                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                   (display-buffer-reuse-window display-buffer-at-bottom)
+                   (reusable-frames . visible)
+                   (window-height . 0.3))))
+#+end_src
+*** VTerm Evil Mode Fix
+Fix Evil Mode paste incompatibility with VTerm
+#+begin_src emacs-lisp
+  ;; TODO Investigate if this is causing the p -> mark bug
+  (defun vterm-evil-p-remap ()
+    "Remap 'p' key in Evil's normal state to execute 'vterm-yank' in vterm buffers."
+    (interactive)
+    (when (and (bound-and-true-p evil-mode)
+               (eq major-mode 'vterm-mode))
+      (define-key evil-normal-state-map "p" 'vterm-yank)))
+
+  (add-hook 'vterm-mode-hook 'vterm-evil-p-remap)
+#+end_src
+
+* User Interface
+** Add Nerd Icons
+Use Icons from Nerd Font to add a little modern spice to Emacs.
+#+begin_src emacs-lisp
+  (use-package nerd-icons
+    :if (display-graphic-p))
+
+  (use-package nerd-icons-dired
+    :hook
+    (dired-mode . nerd-icons-dired-mode)
+    (dired-mode . dired-hide-details-mode))
+
+  (use-package nerd-icons-ivy-rich
+      :init (nerd-icons-ivy-rich-mode 1))
+
+  (setq welcome-dashboard-use-nerd-icons t)
+#+end_src
+
+** Kind Icons
+#+begin_src emacs-lisp
+  (use-package kind-icon
+    :after corfu
+    :custom
+    (kind-icon-default-face 'corfu-default)
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
+
+** Fonts
+*** Set Font
+Set fonts for both Monospace and Proportional text.
+#+begin_src emacs-lisp
+  (defvar customfontsettings
+    '((mono . "FantasqueSansM Nerd Font")
+      (variabl . "FantasqueSansM Nerd Font")
+      (size . 12)))
+
+  (set-face-attribute 'variable-pitch nil
+                      :font (cdr (assoc 'variabl customfontsettings))
+                      :height (* (cdr (assoc 'size customfontsettings)) 10)
+                      :weight 'regular)
+
+  (set-face-attribute 'fixed-pitch nil
+                      :font (cdr (assoc 'mono customfontsettings))
+                      :height (* (cdr (assoc 'size customfontsettings)) 10)
+                      :weight 'regular)
+
+  (set-face-attribute 'default nil
+                      :font (cdr (assoc 'mono customfontsettings))
+                      :height (* (cdr (assoc 'size customfontsettings)) 10)
+                      :weight 'regular)
+
+  (add-to-list 'default-frame-alist
+               `(font . ,(concat (cdr (assoc 'mono customfontsettings)) "-" (number-to-string (cdr (assoc 'size customfontsettings))))))
+
+  (set-face-attribute 'font-lock-comment-face nil
+                      :slant 'italic)
+
+  (set-face-attribute 'font-lock-keyword-face nil
+                      :slant 'italic)
+#+end_src
+*** Ligatures
+Make ligature symbols out of common function symbols.
+#+begin_src emacs-lisp
+    (dolist (char/ligature-re
+       `((?-  . ,(rx (or (or "-->" "-<<" "->>" "-|" "-~" "-<" "->") (+ "-"))))
+         (?/  . ,(rx (or (or "/==" "/=" "/>" "/**" "/*") (+ "/"))))
+         (?*  . ,(rx (or (or "*>" "*/") (+ "*"))))
+         (?<  . ,(rx (or (or "<<=" "<<-" "<|||" "<==>" "<!--" "<=>" "<||" "<|>" "<-<"
+           "<==" "<=<" "<-|" "<~>" "<=|" "<~~" "<$>" "<+>" "</>"
+           "<*>" "<->" "<=" "<|" "<:" "<>"  "<$" "<-" "<~" "<+"
+           "</" "<*")
+             (+ "<"))))
+         (?:  . ,(rx (or (or ":?>" "::=" ":>" ":<" ":?" ":=") (+ ":"))))
+         (?=  . ,(rx (or (or "=>>" "==>" "=/=" "=!=" "=>" "=:=") (+ "="))))
+         (?!  . ,(rx (or (or "!==" "!=") (+ "!"))))
+         (?>  . ,(rx (or (or ">>-" ">>=" ">=>" ">]" ">:" ">-" ">=") (+ ">"))))
+         (?&  . ,(rx (+ "&")))
+         (?|  . ,(rx (or (or "|->" "|||>" "||>" "|=>" "||-" "||=" "|-" "|>"
+           "|]" "|}" "|=")
+             (+ "|"))))
+         (?.  . ,(rx (or (or ".?" ".=" ".-" "..<") (+ "."))))
+         (?+  . ,(rx (or "+>" (+ "+"))))
+         (?\[ . ,(rx (or "[<" "[|")))
+         (?\{ . ,(rx "{|"))
+         (?\? . ,(rx (or (or "?." "?=" "?:") (+ "?"))))
+         (?#  . ,(rx (or (or "#_(" "#[" "#{" "#=" "#!" "#:" "#_" "#?" "#(")
+             (+ "#"))))
+         (?\; . ,(rx (+ ";")))
+         (?_  . ,(rx (or "_|_" "__")))
+         (?~  . ,(rx (or "~~>" "~~" "~>" "~-" "~@")))
+         (?$  . ,(rx "$>"))
+         (?^  . ,(rx "^="))
+         (?\] . ,(rx "]#"))))
+      (let ((char (car char/ligature-re))
+      (ligature-re (cdr char/ligature-re)))
+  (set-char-table-range composition-function-table char
+            `([,ligature-re 0 font-shape-gstring]))))
+
+  ;;HACK for Broken Ligatures
+  (add-hook 'prog-mode-hook 'variable-pitch-mode)
+#+end_src
+*** Font Zooming
+Bind both scroling and +/- to zooming.
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-=") 'text-scale-increase)
+  (global-set-key (kbd "C--") 'text-scale-decrease)
+  (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+  (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+#+end_src
+
+** Padding
+Add Padding around Emacs UI.
+#+begin_src emacs-lisp
+  (use-package spacious-padding
+    :straight '(:type git :host github :repo "protesilaos/spacious-padding")
+    :config
+    (setq spacious-padding-widths
+          '( :internal-border-width 15
+             :header-line-width 4
+             :mode-line-width 6
+             :tab-width 4
+             :right-divider-width 30
+             :scroll-bar-width 8
+             :fringe-width 8))
+
+    (setq spacious-padding-subtle-mode-line
+          `( :mode-line-active 'default
+             :mode-line-inactive vertical-border))
+    :init
+    (spacious-padding-mode 1))
+#+end_src
+
+** Theme
+Set up some lovely themes.
+#+begin_src emacs-lisp
+  (use-package ef-themes
+    :init
+    (setq ef-themes-to-toggle '(ef-trio-light ef-winter))
+    (add-hook 'window-setup-hook
+              (lambda ()
+                (load-theme 'ef-winter t))))
+#+end_src
+
+** Niceties
+*** MacOS Titlebar
+Blend MacOS titlebar into Emacs for a seamless effect.
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  (add-to-list 'default-frame-alist '(ns-appearance . dark))
+  (setq frame-title-format nil)
+  (setq ns-use-proxy-icon nil)
+#+end_src
+*** Disable Extra GUI Features
+Disable GUI features to simplify frames.
+#+begin_src emacs-lisp
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+*** No Scroll Jump
+Scroll line by line instead of jumping multiple.
+#+begin_src emacs-lisp
+  (setq scroll-conservatively 100)
+#+end_src
+*** Winner Mode
+Allow undoing and redoing of window movements.
+#+begin_src emacs-lisp
+  (winner-mode 1)
+#+end_src
