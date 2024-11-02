@@ -14,3 +14,4 @@ fi
 if [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
   exec dbus-run-session river > ~/.river.log 2>&1
 fi
+. "$HOME/.cargo/env"

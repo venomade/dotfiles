@@ -19,6 +19,12 @@ riverctl map normal Super+Shift F spawn "foot --app-id=float-term -W 100x40 -e f
 # Super+D to open dmenu
 riverctl map normal Super D spawn fuzzel
 
+# Super+W to open firefox
+riverctl map normal Super W spawn firefox-esr
+
+# Super+L to lock
+riverctl map normal Super L spawn swaylock
+
 # Super+Shift+Q to close the focused view
 riverctl map normal Super+Shift Q close
 
@@ -149,7 +155,7 @@ do
 done
 
 # Set keyboard layout
-riverctl keyboard-layout -variant "colemak" -options "caps:escape" "us"
+riverctl keyboard-layout -variant "colemak" -options "ctrl:nocaps" "us"
 
 # Set keyboard repeat rate
 riverctl set-repeat 50 300
