@@ -1,5 +1,7 @@
 # Venomade's dotfiles
-These are my dotfiles for [Alpine Linux](https://alpinelinux.org/)
+These are my personal dotfiles for [Alpine Linux](https://alpinelinux.org/)
+
+This repository contains submodules so clone with: `git clone git@github.com:venomade/dotfiles ~/.dotfiles --recurse-submodules`
 
 ## Screenshot
 ![dotfiles screenshot](https://raw.githubusercontent.com/venomade/dotfiles/refs/heads/master/screenshot.png "Dotfiles Screenshot")
@@ -15,7 +17,6 @@ A basic overview of the software I use:
 | Audio            | [Pipewire](https://pipewire.org/)                                  |
 | Audio Mixer      | [ncpamixer](https://github.com/fulhax/ncpamixer)                   |
 | Browser          | [Firefox ESR](https://www.mozilla.org/en-GB/firefox/enterprise/)   |
-| C Compiler       | [Clang LLVM](https://clang.llvm.org/)                              |
 | Clipboard        | [wl-clipboard](https://github.com/bugaevc/wl-clipboard/)           |
 | Containers       | [Docker](https://www.docker.com/) & [Dry](https://moncho.github.io/dry/) |
 | File Manager     | [Yazi](https://github.com/sxyazi/yazi/)                            |
